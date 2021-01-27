@@ -14,8 +14,6 @@ public class ReadInTaskServer
     Selector clientSelector;
     final Map<SocketChannel, ChannelEntry> clients = new ConcurrentHashMap<>();
 
-
-
     public void run(int port, int poolSize) throws IOException
     {
         final ExecutorService executor = Executors.newFixedThreadPool( poolSize );
