@@ -17,15 +17,17 @@ import java.util.concurrent.Executors;
 
 import static nio.NIOSingleThreadServer.PORT;
 
-public class NIOBufferReadingServer
+public class ReadInSelectorServer
 {
     Selector clientSelector;
     final Map<SocketChannel, ChannelEntry> clients = new ConcurrentHashMap<>();
-    final ExecutorService executor = Executors.newFixedThreadPool( 8 );
 
 
-    public void run( int port) throws IOException
+
+    public void run( int port, int poolSize) throws IOException
     {
+        final ExecutorService executor = Executors.newFixedThreadPool( poolSize );
+        System.out.println("pool size: " + poolSize);
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
@@ -46,17 +48,17 @@ public class NIOBufferReadingServer
                     if ( key.isAcceptable() ) {
                         acceptClient( ssc );
                     } else if(key.isReadable()){
-                        key.interestOps(0);
+//                        key.interestOps(0);
                         ChannelEntry entry = clients.get((SocketChannel) key.channel());
                         if(entry == null)
                             throw new RuntimeException();
-                        ByteBuffer buffer = entry.buff;
+                        ByteBuffer buffer = ByteBuffer.allocate(256);
                         SocketChannel channel = entry.socketChannel;
                         int data = channel.read(buffer);
                         if (data == -1 || buffer.get(buffer.position() - 1) == '\n') {
-                            executor.submit(new ChannelEntryTask(key, entry, clientSelector));
+                            executor.submit(new ChannelEntryTask(key, entry, clientSelector, buffer));
                         }else{
-                            System.out.println("failed to read from buffer");
+                            System.out.println("failed to read from buffer. data = " + data);
                         }
 
                     } else{
@@ -78,17 +80,16 @@ public class NIOBufferReadingServer
     }
 
     public static void main( String argv[] ) throws IOException {
-        //new LargerHttpd().run( Integer.parseInt(argv[0]), 3/*threads*/ );
-        new NIOBufferReadingServer().run( PORT);
+        int poolSize = argv.length == 1 ? Integer.getInteger(argv[0]) : 4;
+        new ReadInSelectorServer().run( PORT, poolSize);
     }
 
     static class ChannelEntry{
         private final SocketChannel socketChannel;
-        final ByteBuffer buff = ByteBuffer.allocate(256);
         ChannelEntry(SocketChannel socketChannel) {
             this.socketChannel = socketChannel;
         }
-        public void echo() {
+        public void echo(ByteBuffer buff) {
             try {
                 buff.flip();
                 socketChannel.write(buff);
@@ -106,15 +107,17 @@ public class NIOBufferReadingServer
         private final ChannelEntry channelEntry;
         private final SelectionKey key;
         private final Selector selector;
-        ChannelEntryTask(SelectionKey key, ChannelEntry channelEntry, Selector selector) {
+        private final ByteBuffer buffer;
+        ChannelEntryTask(SelectionKey key, ChannelEntry channelEntry, Selector selector, ByteBuffer buffer) {
             this.channelEntry = channelEntry;
             this.key = key;
             this.selector = selector;
+            this.buffer = buffer;
         }
         @Override
         public void run() {
-            channelEntry.echo();
-            key.interestOps(SelectionKey.OP_READ);
+            channelEntry.echo(buffer);
+//            key.interestOps(SelectionKey.OP_READ);
 //            selector.wakeup();
         }
     }

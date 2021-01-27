@@ -9,7 +9,7 @@ import java.nio.channels.*;
 
 import static nio.NIOSingleThreadServer.PORT;
 
-public class NIODelegatingServer
+public class ReadInTaskServer
 {
     Selector clientSelector;
     final Map<SocketChannel, ChannelEntry> clients = new ConcurrentHashMap<>();
@@ -62,10 +62,9 @@ public class NIODelegatingServer
     }
 
     public static void main( String argv[] ) throws IOException {
-        //new LargerHttpd().run( Integer.parseInt(argv[0]), 3/*threads*/ );
-        int poolSize = argv.length == 1 ? Integer.getInteger(argv[0]) : 8;
+        int poolSize = argv.length == 1 ? Integer.getInteger(argv[0]) : 4;
         System.out.println("pool size: " + poolSize);
-        new NIODelegatingServer().run( PORT, poolSize);
+        new ReadInTaskServer().run( PORT, poolSize);
     }
 
     static class ChannelEntry{
