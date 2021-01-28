@@ -16,14 +16,9 @@
 package netty.echo;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.CharsetUtil;
-
-import java.util.concurrent.CompletableFuture;
-
-import static netty.echo.EchoClient.ATTRIBUTE_KEY;
 
 /**
  * Handler implementation for the echo client.  It initiates the ping-pong
@@ -31,31 +26,25 @@ import static netty.echo.EchoClient.ATTRIBUTE_KEY;
  * the server.
  */
 public class EchoClientHandler extends ChannelInboundHandlerAdapter {
-
-    private final ByteBuf firstMessage;
-    private ChannelHandlerContext ctx;
-
-
     /**
      * Creates a client-side handler.
      */
-    public EchoClientHandler() {
-        byte[] bytes = "HELLO".getBytes(CharsetUtil.UTF_8);
-        firstMessage = Unpooled.wrappedBuffer(bytes);
+    private final NettyNioClient client;
+    public EchoClientHandler(NettyNioClient client) {
+        this.client = client;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        this.ctx = ctx;
-//        ctx.writeAndFlush(firstMessage);
+
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         String message = ((ByteBuf) msg).toString(CharsetUtil.UTF_8);
-        System.out.println("Client Handler received: " + message);
-        CompletableFuture completableFuture = (CompletableFuture) ctx.channel().attr(ATTRIBUTE_KEY).get();
-        completableFuture.complete(message);
+//        System.out.println("Client Handler received: " + message);
+        client.completableFuture.complete(message);
+        ((ByteBuf) msg).release();
     }
 
     @Override

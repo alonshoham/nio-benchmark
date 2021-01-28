@@ -21,13 +21,11 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import static nio.NIOSingleThreadServer.PORT;
 
@@ -37,19 +35,19 @@ import static nio.NIOSingleThreadServer.PORT;
  * traffic between the echo client and server by sending the first message to
  * the server.
  */
-
-public class EchoClient {
+@State(Scope.Thread)
+public class NettyNioClient {
     static final String HOST = System.getProperty("host", "127.0.0.1");
     static final int SIZE = Integer.parseInt(System.getProperty("size", "256"));
     private final NioEventLoopGroup group;
     private ChannelFuture f;
-    public final static AttributeKey ATTRIBUTE_KEY = AttributeKey.newInstance("future");
+    public volatile CompletableFuture completableFuture;
 
-
-    public EchoClient() {
+    public NettyNioClient() {
         // Configure the client.
         group = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();
+        NettyNioClient client = this;
         b.group(group)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
@@ -58,7 +56,7 @@ public class EchoClient {
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
                         //p.addLast(new LoggingHandler(LogLevel.INFO));
-                        p.addLast(new EchoClientHandler());
+                        p.addLast(new EchoClientHandler(client));
                     }
                 });
 
@@ -73,10 +71,9 @@ public class EchoClient {
 
     public CompletableFuture<String> sendMessageInternal(String message){
         byte[] bytes = message.getBytes(CharsetUtil.UTF_8);
-        CompletableFuture<String> future = new CompletableFuture<>();
-        f.channel().attr(ATTRIBUTE_KEY).set(future);
+        this.completableFuture = new CompletableFuture();
         f.channel().writeAndFlush(Unpooled.wrappedBuffer(bytes));
-        return future;
+        return completableFuture;
     }
 
     public void sendMessage(String message) {
@@ -88,20 +85,20 @@ public class EchoClient {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        System.out.println("Client received: " + response);
+//        System.out.println("Client received: " + response);
     }
 
-    public static void main(String[] args) {
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
-
-        for (int i = 0; i < 4; i++) {
-            int finalI = i;
-            executorService.submit(() ->{
-                        EchoClient echoClient = new EchoClient();
-                echoClient.sendMessage("HELLO-" + finalI);
-            });
-        }
-    }
+//    public static void main(String[] args) {
+//        ExecutorService executorService = Executors.newFixedThreadPool(4);
+//
+//        for (int i = 0; i < 4; i++) {
+//            int finalI = i;
+//            executorService.submit(() ->{
+//                        EchoClient echoClient = new EchoClient();
+//                echoClient.sendMessage("HELLO-" + finalI);
+//            });
+//        }
+//    }
 
     public void close() throws Exception{
         try{

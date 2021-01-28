@@ -38,7 +38,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        System.out.println("Server Received: " + ((ByteBuf) msg).toString(CharsetUtil.UTF_8));
+//        System.out.println("Server Received: " + ((ByteBuf) msg).toString(CharsetUtil.UTF_8));
         ctx.write(msg);
     }
 

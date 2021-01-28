@@ -15,14 +15,13 @@
  */
 package netty.echo;
 
-import nio.JMHClientMain;
 import nio.Prop;
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+
+import java.util.Random;
 
 /**
  * Sends one message when a connection is open and echoes back any received
@@ -30,15 +29,15 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
  * traffic between the echo client and server by sending the first message to
  * the server.
  */
-public class NettyEchoClientMain {
+public class NettyNioBenchmark {
     private static int threads = 1;
     private static int cycles = 25;
-    private static boolean print = false;
+    public static boolean print = false;
 
     public static void main(String[] args) throws Exception {
         parseArgs(args);
         Options opt = new OptionsBuilder()
-                .include(NettyEchoClientMain.class.getName())
+                .include(NettyNioBenchmark.class.getName())
                 .forks(1)
                 .threads(threads)
                 .measurementIterations(cycles)
@@ -68,6 +67,11 @@ public class NettyEchoClientMain {
                 }
             }
         }
+    }
+
+    @Benchmark
+    public void test(NettyNioClient nettyNioClient){
+        nettyNioClient.sendMessage("message-" + new Random().nextInt(100));
     }
 
 }
