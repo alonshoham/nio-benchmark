@@ -26,11 +26,12 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
+import static nio.NIOSingleThreadServer.PORT;
+
 /**
  * Echoes back any received data from a client.
  */
 public final class EchoServer {
-    static final int PORT = Integer.parseInt(System.getProperty("port", "8007"));
 
     public static void main(String[] args) throws Exception {
 

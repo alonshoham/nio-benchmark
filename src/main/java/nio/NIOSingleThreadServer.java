@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class NIOSingleThreadServer
 {
-    public final static int PORT = 1235;
+    public final static int PORT = 8007;
     private static Selector selector;
     public void run( int port) throws IOException
     {

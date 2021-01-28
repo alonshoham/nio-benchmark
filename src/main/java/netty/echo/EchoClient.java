@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static nio.NIOSingleThreadServer.PORT;
+
 /**
  * Sends one message when a connection is open and echoes back any received
  * data to the server.  Simply put, the echo client initiates the ping-pong
@@ -38,7 +40,6 @@ import java.util.concurrent.Executors;
 
 public class EchoClient {
     static final String HOST = System.getProperty("host", "127.0.0.1");
-    static final int PORT = Integer.parseInt(System.getProperty("port", "8007"));
     static final int SIZE = Integer.parseInt(System.getProperty("size", "256"));
     private final NioEventLoopGroup group;
     private ChannelFuture f;
