@@ -1,6 +1,5 @@
 package nio;
 
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
@@ -13,30 +12,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.NoSuchElementException;
 import java.util.Random;
 
 import static nio.NIOSingleThreadServer.PORT;
 
 @State(Scope.Benchmark)
 public class JMHClientMain {
-    enum Prop {
-        THREADS("threads"),
-        CYCLES("cycles"),
-        PRINT("print");
-        String value;
-        Prop(String value) {
-            this.value = value;
-        }
-        public static Prop fromValue(String value) {
-            for (Prop prop : Prop.values()) {
-                if (prop.value.equals(value)) {
-                    return prop;
-                }
-            }
-            throw new NoSuchElementException("");
-        }
-    }
 
     private static int threads = 1;
     private static int cycles = 25;
@@ -88,7 +69,7 @@ public class JMHClientMain {
         public JMHNIOClient() {
             try {
                 client = SocketChannel.open(new InetSocketAddress(InetAddress
-                        .getLoopbackAddress(), PORT));
+                        .getLoopbackAddress(), 8007));
             } catch (IOException e) {
                 e.printStackTrace();
             }
