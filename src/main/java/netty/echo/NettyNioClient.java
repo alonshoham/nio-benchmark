@@ -36,12 +36,8 @@ import static nio.NIOSingleThreadServer.PORT;
  * the server.
  */
 @State(Scope.Thread)
-public class NettyNioClient {
-    static final String HOST = System.getProperty("host", "127.0.0.1");
-    static final int SIZE = Integer.parseInt(System.getProperty("size", "256"));
+public class NettyNioClient extends AbstractNettyClient{
     private final NioEventLoopGroup group;
-    private ChannelFuture f;
-    public volatile CompletableFuture completableFuture;
 
     public NettyNioClient() {
         // Configure the client.
@@ -69,24 +65,7 @@ public class NettyNioClient {
 
     }
 
-    public CompletableFuture<String> sendMessageInternal(String message){
-        byte[] bytes = message.getBytes(CharsetUtil.UTF_8);
-        this.completableFuture = new CompletableFuture();
-        f.channel().writeAndFlush(Unpooled.wrappedBuffer(bytes));
-        return completableFuture;
-    }
 
-    public void sendMessage(String message) {
-        String response = null;
-        try {
-            response = sendMessageInternal(message).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-//        System.out.println("Client received: " + response);
-    }
 
 //    public static void main(String[] args) {
 //        ExecutorService executorService = Executors.newFixedThreadPool(4);

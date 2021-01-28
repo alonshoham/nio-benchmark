@@ -40,12 +40,8 @@ import static nio.NIOSingleThreadServer.PORT;
  * the server.
  */
 @State(Scope.Thread)
-public class NettyEpollClient {
-    static final String HOST = System.getProperty("host", "127.0.0.1");
-    static final int SIZE = Integer.parseInt(System.getProperty("size", "256"));
+public class NettyEpollClient extends AbstractNettyClient{
     private final EpollEventLoopGroup group;
-    private ChannelFuture f;
-    public volatile CompletableFuture completableFuture;
 
     public NettyEpollClient() {
         // Configure the client.

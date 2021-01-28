@@ -29,8 +29,8 @@ public class EchoClientHandler extends ChannelInboundHandlerAdapter {
     /**
      * Creates a client-side handler.
      */
-    private final NettyNioClient client;
-    public EchoClientHandler(NettyNioClient client) {
+    private final AbstractNettyClient client;
+    public EchoClientHandler(AbstractNettyClient client) {
         this.client = client;
     }
 
