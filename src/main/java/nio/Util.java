@@ -14,7 +14,7 @@ public class Util {
                     if (key.equals("poolSize"))
                         poolSize = Integer.valueOf(value);
                     if (key.equals("poolType"))
-                        poolType = value;
+                        poolType = value.toLowerCase();
                 }
 
             }

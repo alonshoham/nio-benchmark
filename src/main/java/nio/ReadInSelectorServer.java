@@ -1,5 +1,8 @@
 package nio;
 
+import com.j_spaces.kernel.threadpool.DynamicThreadPoolExecutor;
+import com.j_spaces.kernel.threadpool.queue.DynamicQueue;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -14,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static nio.NIOSingleThreadServer.PORT;
 import static nio.Util.*;
@@ -25,7 +29,14 @@ public class ReadInSelectorServer
 
     public void run( int port) throws IOException
     {
-        final ExecutorService executor = poolType.equals("fixed") ? Executors.newFixedThreadPool( poolSize ): Executors.newWorkStealingPool( poolSize );
+        final ExecutorService executor;
+        if(poolType.equals("fixed"))
+            executor = Executors.newFixedThreadPool( poolSize );
+        else if(poolType.equals("work-stealing"))
+            executor = Executors.newWorkStealingPool( poolSize );
+        else if(poolType.equals("dynamic"))
+            executor = new DynamicThreadPoolExecutor(0, poolSize, 60000, TimeUnit.MILLISECONDS, new DynamicQueue<>());
+        else throw new IllegalArgumentException("");
         System.out.println("pool size: " + poolSize + " poolType: " + poolType);
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
