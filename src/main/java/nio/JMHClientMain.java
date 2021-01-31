@@ -1,9 +1,10 @@
 package nio;
 
-import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
@@ -13,8 +14,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Random;
-
-import static nio.NIOSingleThreadServer.PORT;
 
 @State(Scope.Benchmark)
 public class JMHClientMain {
@@ -28,6 +27,11 @@ public class JMHClientMain {
         client.sendMessage("message");
     }
 
+    @TearDown
+    public void close(JMHNIOClient client){
+        client.close();
+    }
+
     public static void main(String[] args) throws Exception {
         parseArgs(args);
         Options opt = new OptionsBuilder()
@@ -38,6 +42,7 @@ public class JMHClientMain {
                 .build();
         new Runner(opt).run();
     }
+
     private static void parseArgs(String[] args){
         for (String arg: args){
             String[] parsed = arg.split("=");
@@ -93,6 +98,14 @@ public class JMHClientMain {
                 e.printStackTrace();
             }
             return response;
+        }
+
+        public void close(){
+            try {
+                client.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
