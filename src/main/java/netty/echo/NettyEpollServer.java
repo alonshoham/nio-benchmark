@@ -28,7 +28,7 @@ import static nio.NIOSingleThreadServer.PORT;
 /**
  * Echoes back any received data from a client.
  */
-public final class EpollNettyServer {
+public final class NettyEpollServer {
 
     public static void main(String[] args) throws Exception {
 

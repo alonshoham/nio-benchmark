@@ -8,15 +8,17 @@ import java.net.*;
 import java.nio.channels.*;
 
 import static nio.NIOSingleThreadServer.PORT;
+import static nio.Util.*;
 
 public class ReadInTaskServer
 {
     Selector clientSelector;
     final Map<SocketChannel, ChannelEntry> clients = new ConcurrentHashMap<>();
 
-    public void run(int port, int poolSize) throws IOException
+    public void run(int port) throws IOException
     {
-        final ExecutorService executor = Executors.newFixedThreadPool( poolSize );
+        final ExecutorService executor = poolType.equals("fixed") ? Executors.newFixedThreadPool( poolSize ): Executors.newWorkStealingPool( poolSize );
+        System.out.println("pool size: " + poolSize + " poolType: " + poolType);
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
@@ -60,10 +62,10 @@ public class ReadInTaskServer
     }
 
     public static void main( String argv[] ) throws IOException {
-        int poolSize = argv.length == 1 ? Integer.valueOf(argv[0]) : 4;
-        System.out.println("pool size: " + poolSize);
-        new ReadInTaskServer().run( PORT, poolSize);
+        parseArgs(argv);
+        new ReadInTaskServer().run( PORT);
     }
+
 
     static class ChannelEntry{
         private final SocketChannel socketChannel;

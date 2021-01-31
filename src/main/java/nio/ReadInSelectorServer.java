@@ -16,16 +16,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static nio.NIOSingleThreadServer.PORT;
+import static nio.Util.*;
 
 public class ReadInSelectorServer
 {
     Selector clientSelector;
     final Map<SocketChannel, ChannelEntry> clients = new ConcurrentHashMap<>();
 
-    public void run( int port, int poolSize) throws IOException
+    public void run( int port) throws IOException
     {
-        final ExecutorService executor = Executors.newFixedThreadPool( poolSize );
-        System.out.println("pool size: " + poolSize);
+        final ExecutorService executor = poolType.equals("fixed") ? Executors.newFixedThreadPool( poolSize ): Executors.newWorkStealingPool( poolSize );
+        System.out.println("pool size: " + poolSize + " poolType: " + poolType);
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
@@ -78,8 +79,8 @@ public class ReadInSelectorServer
     }
 
     public static void main( String argv[] ) throws IOException {
-        int poolSize = argv.length == 1 ? Integer.valueOf(argv[0]) : 4;
-        new ReadInSelectorServer().run( PORT, poolSize);
+       parseArgs(argv);
+        new ReadInSelectorServer().run( PORT);
     }
 
     static class ChannelEntry{
