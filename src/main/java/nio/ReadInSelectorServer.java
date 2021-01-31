@@ -78,7 +78,7 @@ public class ReadInSelectorServer
     }
 
     public static void main( String argv[] ) throws IOException {
-        int poolSize = argv.length == 1 ? Integer.getInteger(argv[0]) : 4;
+        int poolSize = argv.length == 1 ? Integer.valueOf(argv[0]) : 4;
         new ReadInSelectorServer().run( PORT, poolSize);
     }
 
