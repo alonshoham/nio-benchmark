@@ -1,7 +1,9 @@
 package nio;
 
+import com.gigaspaces.lrmi.nio.async.LRMIThreadPoolExecutor;
 import com.j_spaces.kernel.threadpool.DynamicThreadPoolExecutor;
 import com.j_spaces.kernel.threadpool.queue.DynamicQueue;
+import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -35,7 +37,10 @@ public class ReadInSelectorServer
         else if(poolType.equals("work-stealing"))
             executor = Executors.newWorkStealingPool( poolSize );
         else if(poolType.equals("dynamic"))
-            executor = new DynamicThreadPoolExecutor(0, poolSize, 60000, TimeUnit.MILLISECONDS, new DynamicQueue<>());
+            executor = new LRMIThreadPoolExecutor(0, poolSize, 60000, Integer.MAX_VALUE, Long.MAX_VALUE,
+                    Thread.NORM_PRIORITY,
+                    "LRMI-Custom",
+                    true, true);
         else throw new IllegalArgumentException("");
         System.out.println("pool size: " + poolSize + " poolType: " + poolType);
         clientSelector = Selector.open();

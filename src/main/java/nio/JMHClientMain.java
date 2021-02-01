@@ -1,9 +1,6 @@
 package nio;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -27,10 +24,10 @@ public class JMHClientMain {
         client.sendMessage("message");
     }
 
-    @TearDown
-    public void close(JMHNIOClient client){
-        client.close();
-    }
+//    @TearDown
+//    public void close(JMHNIOClient client){
+//        client.close();
+//    }
 
     public static void main(String[] args) throws Exception {
         parseArgs(args);
@@ -102,6 +99,7 @@ public class JMHClientMain {
 
         public void close(){
             try {
+                System.out.println("CLOSING!!");
                 client.close();
             } catch (IOException e) {
                 e.printStackTrace();
