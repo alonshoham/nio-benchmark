@@ -18,12 +18,13 @@ import java.util.Random;
 public class JMHClientMain {
 
     private static int threads = 1;
+    private static int payload = 1024;
     private static int cycles = 25;
     private static boolean print = false;
 
     @Benchmark
     public void testEcho(JMHNIOClient client){
-        client.sendMessage("message");
+        client.sendMessage();
     }
 
 //    @TearDown
@@ -60,6 +61,9 @@ public class JMHClientMain {
                     case PRINT:
                         print = Boolean.getBoolean(value);
                         break;
+                    case PAYLOAD:
+                        payload = Integer.valueOf(value);
+                        break;
                 }
             }
         }
@@ -69,19 +73,25 @@ public class JMHClientMain {
     public static class JMHNIOClient {
         private static final Random random = new Random();
         private SocketChannel client;
+        private String message;
 
         public JMHNIOClient() {
             try {
                 client = SocketChannel.open(new InetSocketAddress(InetAddress
                         .getLoopbackAddress(), 8007));
+                char[] m = new char[payload];
+                for (int i = 0; i < payload; i++) {
+                    m[i] = 'a';
+                }
+                message = new String(m);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        public String sendMessage(String msg) {
-            msg = msg + "-" + random.nextInt(100) + '\n';
-            ByteBuffer buffer = ByteBuffer.wrap(msg.getBytes());
+        public String sendMessage() {
+//            msg = msg + "-" + random.nextInt(100) + '\n';
+            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
             String response = null;
             try {
                 client.write(buffer);
@@ -90,7 +100,7 @@ public class JMHClientMain {
                 response = new String(buffer.array()).trim();
                 buffer.clear();
                 if(print) {
-                    System.out.println("Sent: " + msg);
+                    System.out.println("Sent: " + message);
                     System.out.println("Received: " + response);
                 }
             } catch (IOException e) {

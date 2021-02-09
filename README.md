@@ -33,7 +33,7 @@ Both nio servers accept the following optional args:
     `java -cp target/nio-benchmark-1.0-SNAPSHOT-jar-with-dependencies.jar nio.ReadInSelectorServer poolType=work-stealing poolSize=8`
 - Start client:
   
-    `java -cp target/nio-benchmark-1.0-SNAPSHOT-jar-with-dependencies.jar nio.JMHClientMainthreads=2 cycles=10 print=true`
+    `java -cp target/nio-benchmark-1.0-SNAPSHOT-jar-with-dependencies.jar nio.JMHClientMain threads=2 cycles=10 print=true`
 
 ### Output
 The client main will output a standard JMH output of average TP

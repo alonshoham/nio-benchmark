@@ -5,7 +5,8 @@ import java.util.NoSuchElementException;
 public enum Prop {
     THREADS("threads"),
     CYCLES("cycles"),
-    PRINT("print");
+    PRINT("print"),
+    PAYLOAD("payload");
     String value;
 
     Prop(String value) {
