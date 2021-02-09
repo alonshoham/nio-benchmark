@@ -1,9 +1,6 @@
 package nio;
 
 import com.gigaspaces.lrmi.nio.async.LRMIThreadPoolExecutor;
-import com.j_spaces.kernel.threadpool.DynamicThreadPoolExecutor;
-import com.j_spaces.kernel.threadpool.queue.DynamicQueue;
-import sun.management.jmxremote.LocalRMIServerSocketFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -19,7 +16,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static nio.NIOSingleThreadServer.PORT;
 import static nio.Util.*;
