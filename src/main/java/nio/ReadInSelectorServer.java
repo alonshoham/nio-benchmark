@@ -2,6 +2,8 @@ package nio;
 
 import com.gigaspaces.lrmi.nio.async.LRMIThreadPoolExecutor;
 import common.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -12,18 +14,15 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static nio.Util.*;
 
-public class ReadInSelectorServer
-{
+public class ReadInSelectorServer {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     Selector clientSelector;
-    final Map<SocketChannel, ChannelEntry> clients = new ConcurrentHashMap<>();
 
     public void run( int port) throws IOException
     {
@@ -38,7 +37,7 @@ public class ReadInSelectorServer
                     "LRMI-Custom",
                     true, true);
         else throw new IllegalArgumentException("");
-        System.out.println("pool size: " + poolSize + " poolType: " + poolType);
+        logger.info("pool size: {}, poolType: {}", poolSize, poolType);
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
@@ -60,9 +59,7 @@ public class ReadInSelectorServer
                         acceptClient( ssc );
                     } else if(key.isReadable()){
 //                        key.interestOps(0);
-                        ChannelEntry entry = clients.get((SocketChannel) key.channel());
-                        if(entry == null)
-                            throw new RuntimeException();
+                        ChannelEntry entry = (ChannelEntry) key.attachment();
                         ByteBuffer buffer = ByteBuffer.allocate(Constants.MAX_PAYLOAD);
                         SocketChannel channel = entry.socketChannel;
                         try {
@@ -70,17 +67,17 @@ public class ReadInSelectorServer
                             if (data == -1 || buffer.get(buffer.position() - 1) == '\n') {
                                 executor.submit(new ChannelEntryTask(key, entry, clientSelector, buffer));
                             } else {
-                                System.out.println("failed to read from buffer. data = " + data);
+                                logger.warn("failed to read from buffer. data = " + data);
                             }
                         } catch (IOException e) {
-                            System.out.println("Failed to read from " + channel + " - cancelling key" + System.lineSeparator() + e);
+                            logger.warn("Failed to read from " + channel + " - cancelling key" + System.lineSeparator() + e);
                             key.cancel();
                         }
                     } else{
-                        System.out.println("UNEXPECTED KEY");
+                        logger.warn("UNEXPECTED KEY");
                     }
                 }
-            } catch ( IOException e ) { System.out.println(e); }
+            } catch ( IOException e ) { logger.error("Failed to process selector", e); }
         }
     }
 
@@ -88,10 +85,9 @@ public class ReadInSelectorServer
     {
         SocketChannel clientSocket = ssc.accept();
         clientSocket.configureBlocking(false);
-        clientSocket.register( clientSelector, SelectionKey.OP_READ );
         clientSocket.socket().setTcpNoDelay(true);
-        clients.put(clientSocket, new ChannelEntry(clientSocket));
-        System.out.println("Added new client");
+        clientSocket.register( clientSelector, SelectionKey.OP_READ, new ChannelEntry(clientSocket));
+        logger.info("Added new client {}", clientSocket);
     }
 
     public static void main( String argv[] ) throws IOException {
