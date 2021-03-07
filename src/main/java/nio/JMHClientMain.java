@@ -1,31 +1,31 @@
 package nio;
 
+import common.Client;
 import common.Constants;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.Random;
 
 @State(Scope.Benchmark)
 public class JMHClientMain {
 
     private static int threads = 1;
     private static int payload = Constants.MAX_PAYLOAD;
-    private static int cycles = 25;
+    private static int cycles = 10;
     private static boolean print = false;
 
     @Benchmark
-    public void testEcho(JMHNIOClient client){
-        client.sendMessage();
+    public void testEcho(JMHNIOClient client, Blackhole blackhole) {
+        Object result = client.sendMessage();
+        blackhole.consume(result);
     }
 
 //    @TearDown
@@ -72,43 +72,42 @@ public class JMHClientMain {
 
     @State(Scope.Thread)
     public static class JMHNIOClient {
-        private static final Random random = new Random();
-        private SocketChannel client;
-        private String message;
+        private final Client client;
+        private final String message = generateString(payload, 'a', '\n');
+
+        private static String generateString(int length, char c, char terminator) {
+            char[] chars = new char[length];
+            for (int i = 0; i < length; i++) {
+                chars[i] = c;
+            }
+            chars[length - 1] = terminator;
+            return new String(chars);
+        }
 
         public JMHNIOClient() {
             try {
-                client = SocketChannel.open(new InetSocketAddress(InetAddress
-                        .getLoopbackAddress(), 8007));
-                char[] m = new char[payload];
-                for (int i = 0; i < payload; i++) {
-                    m[i] = 'a';
-                }
-                m[payload - 1] = '\n';
-                message = new String(m);
+                client = new Client();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new UncheckedIOException(e);
             }
         }
 
         public String sendMessage() {
-//            msg = msg + "-" + random.nextInt(100) + '\n';
             ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
-            String response = null;
             try {
-                client.write(buffer);
+                client.writeBlocking(buffer);
                 buffer.clear();
-                client.read(buffer);
-                response = new String(buffer.array()).trim();
+                client.readBlocking(buffer);
+                String response = new String(buffer.array()).trim();
                 buffer.clear();
                 if(print) {
                     System.out.println("Sent: " + message);
                     System.out.println("Received: " + response);
                 }
+                return response;
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new UncheckedIOException(e);
             }
-            return response;
         }
 
         public void close(){
