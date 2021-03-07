@@ -21,7 +21,7 @@ import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import netty.echo.EchoServerHandler;
+import netty.echo.HandshakeServerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,6 @@ public final class NettyServer {
         // Configure the server.
         EventLoopGroup bossGroup = factory.createEventLoopGroup(1);
         EventLoopGroup workerGroup = factory.createEventLoopGroup();
-        final EchoServerHandler serverHandler = new EchoServerHandler();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -49,7 +48,7 @@ public final class NettyServer {
                  public void initChannel(SocketChannel ch) throws Exception {
                      ChannelPipeline p = ch.pipeline();
 //                     p.addLast(new LoggingHandler(LogLevel.INFO));
-                     p.addLast(serverHandler);
+                     p.addLast(new HandshakeServerHandler());
                  }
              });
 

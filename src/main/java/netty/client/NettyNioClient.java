@@ -25,7 +25,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 
-import static nio.NIOSingleThreadServer.PORT;
+import static common.Constants.PORT;
 
 /**
  * Sends one message when a connection is open and echoes back any received

@@ -2,7 +2,7 @@ package grpc;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import nio.Prop;
+import common.Prop;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;

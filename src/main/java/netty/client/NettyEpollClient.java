@@ -30,7 +30,7 @@ import org.openjdk.jmh.annotations.State;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import static nio.NIOSingleThreadServer.PORT;
+import static common.Constants.PORT;
 
 /**
  * Sends one message when a connection is open and echoes back any received

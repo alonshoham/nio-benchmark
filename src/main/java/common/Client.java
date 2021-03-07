@@ -20,6 +20,10 @@ public class Client implements Closeable {
         channel.close();
     }
 
+    public void writeBlocking(byte v) throws IOException {
+        channel.socket().getOutputStream().write(v);
+    }
+
     public void writeBlocking(ByteBuffer buffer) throws IOException {
         while (buffer.hasRemaining())
             channel.write(buffer);

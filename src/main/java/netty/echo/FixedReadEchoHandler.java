@@ -15,31 +15,32 @@
  */
 package netty.echo;
 
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handler implementation for the echo server.
  */
-@Sharable
-public class EchoServerHandler extends ChannelInboundHandlerAdapter {
+public class FixedReadEchoHandler extends ChannelInboundHandlerAdapter {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-//        System.out.println("Server Received: " + ((ByteBuf) msg).toString(CharsetUtil.UTF_8));
-        ctx.write(msg);
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        logger.info("handlerAdded: {}", ctx.channel());
     }
 
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) {
-        ctx.flush();
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        //logger.info("channelRead: {} {}", ctx.channel(), msg);
+        ctx.writeAndFlush(msg);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // Close the connection when an exception is raised.
-        cause.printStackTrace();
+        logger.warn("exceptionCaught - closing channel {}", ctx.channel(), cause);
         ctx.close();
     }
 }

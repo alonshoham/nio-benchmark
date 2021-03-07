@@ -2,6 +2,7 @@ package nio;
 
 import common.Client;
 import common.Constants;
+import common.Prop;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -20,6 +21,7 @@ public class JMHClientMain {
     private static int threads = 1;
     private static int payload = Constants.MAX_PAYLOAD;
     private static int cycles = 10;
+    private static final byte version = Byte.parseByte(Constants.getEnv("GSN_VERSION", "1"));
 
     @Benchmark
     public void testEcho(JMHNIOClient client, Blackhole blackhole) throws IOException {
@@ -59,6 +61,7 @@ public class JMHClientMain {
                         cycles = Integer.parseInt(value);
                         break;
                     case PAYLOAD:
+                        System.out.println("payload " + value);
                         payload = Integer.parseInt(value);
                         break;
                 }
@@ -84,6 +87,7 @@ public class JMHClientMain {
         public JMHNIOClient() {
             try {
                 client = new Client();
+                client.writeBlocking(version);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

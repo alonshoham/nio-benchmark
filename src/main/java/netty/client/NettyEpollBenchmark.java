@@ -15,7 +15,7 @@
  */
 package netty.client;
 
-import nio.Prop;
+import common.Prop;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;

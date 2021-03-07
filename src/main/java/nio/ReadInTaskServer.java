@@ -15,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static nio.NIOSingleThreadServer.PORT;
-import static nio.Util.*;
+import static common.Constants.PORT;
+import static common.Util.*;
 
 public class ReadInTaskServer
 {
