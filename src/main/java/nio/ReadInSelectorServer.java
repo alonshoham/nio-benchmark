@@ -26,23 +26,11 @@ public class ReadInSelectorServer {
 
     public void run( int port) throws IOException
     {
-        final ExecutorService executor;
-        if(poolType.equals("fixed"))
-            executor = Executors.newFixedThreadPool( poolSize );
-        else if(poolType.equals("work-stealing"))
-            executor = Executors.newWorkStealingPool( poolSize );
-        else if(poolType.equals("dynamic"))
-            executor = new LRMIThreadPoolExecutor(0, poolSize, 60000, Integer.MAX_VALUE, Long.MAX_VALUE,
-                    Thread.NORM_PRIORITY,
-                    "LRMI-Custom",
-                    true, true);
-        else throw new IllegalArgumentException("");
-        logger.info("pool size: {}, poolType: {}", poolSize, poolType);
+        final ExecutorService executor = initExecutor();
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
-        InetSocketAddress sa =  new InetSocketAddress( InetAddress
-                .getLoopbackAddress(), port );
+        InetSocketAddress sa =  new InetSocketAddress( InetAddress.getLoopbackAddress(), port );
         ssc.socket().bind( sa );
         ssc.register( clientSelector, SelectionKey.OP_ACCEPT );
 
@@ -59,13 +47,12 @@ public class ReadInSelectorServer {
                         acceptClient( ssc );
                     } else if(key.isReadable()){
 //                        key.interestOps(0);
-                        ChannelEntry entry = (ChannelEntry) key.attachment();
+                        SocketChannel channel = (SocketChannel) key.channel();
                         ByteBuffer buffer = ByteBuffer.allocate(Constants.MAX_PAYLOAD);
-                        SocketChannel channel = entry.socketChannel;
                         try {
                             int data = channel.read(buffer);
                             if (data == -1 || buffer.get(buffer.position() - 1) == '\n') {
-                                executor.submit(new ChannelEntryTask(key, entry, clientSelector, buffer));
+                                executor.submit(new ChannelEntryTask(channel, buffer));
                             } else {
                                 logger.warn("failed to read from buffer. data = " + data);
                             }
@@ -86,8 +73,34 @@ public class ReadInSelectorServer {
         SocketChannel clientSocket = ssc.accept();
         clientSocket.configureBlocking(false);
         clientSocket.socket().setTcpNoDelay(true);
-        clientSocket.register( clientSelector, SelectionKey.OP_READ, new ChannelEntry(clientSocket));
+        clientSocket.register( clientSelector, SelectionKey.OP_READ);
         logger.info("Added new client {}", clientSocket);
+    }
+
+    private static void echo(SocketChannel channel, ByteBuffer buff) {
+        try {
+            buff.flip();
+            channel.write(buff);
+            if (buff.hasRemaining()) {
+                System.out.println("failed to write to buffer");
+            }
+            buff.clear();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private ExecutorService initExecutor() {
+        logger.info("pool size: {}, poolType: {}", poolSize, poolType);
+        switch (poolType) {
+            case "fixed": return Executors.newFixedThreadPool(poolSize);
+            case "work-stealing": Executors.newWorkStealingPool(poolSize);
+            case "dynamic": return new LRMIThreadPoolExecutor(0, poolSize, 60000, Integer.MAX_VALUE, Long.MAX_VALUE,
+                    Thread.NORM_PRIORITY,
+                    "LRMI-Custom",
+                    true, true);
+            default: throw new IllegalArgumentException("Unsupported pool type: " + poolType);
+        }
     }
 
     public static void main( String argv[] ) throws IOException {
@@ -95,39 +108,16 @@ public class ReadInSelectorServer {
         new ReadInSelectorServer().run(Constants.PORT);
     }
 
-    static class ChannelEntry{
-        private final SocketChannel socketChannel;
-        ChannelEntry(SocketChannel socketChannel) {
-            this.socketChannel = socketChannel;
-        }
-        public void echo(ByteBuffer buff) {
-            try {
-                buff.flip();
-                socketChannel.write(buff);
-                if(buff.hasRemaining()) {
-                    System.out.println("failed to write to buffer");
-                }
-                buff.clear();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     static class ChannelEntryTask implements Runnable{
-        private final ChannelEntry channelEntry;
-        private final SelectionKey key;
-        private final Selector selector;
+        private final SocketChannel channel;
         private final ByteBuffer buffer;
-        ChannelEntryTask(SelectionKey key, ChannelEntry channelEntry, Selector selector, ByteBuffer buffer) {
-            this.channelEntry = channelEntry;
-            this.key = key;
-            this.selector = selector;
+        ChannelEntryTask(SocketChannel channel, ByteBuffer buffer) {
+            this.channel = channel;
             this.buffer = buffer;
         }
         @Override
         public void run() {
-            channelEntry.echo(buffer);
+            echo(channel, buffer);
 //            key.interestOps(SelectionKey.OP_READ);
 //            selector.wakeup();
         }
