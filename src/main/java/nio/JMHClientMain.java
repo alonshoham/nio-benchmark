@@ -20,11 +20,10 @@ public class JMHClientMain {
     private static int threads = 1;
     private static int payload = Constants.MAX_PAYLOAD;
     private static int cycles = 10;
-    private static boolean print = false;
 
     @Benchmark
     public void testEcho(JMHNIOClient client, Blackhole blackhole) {
-        Object result = client.sendMessage();
+        Object result = client.sendMessageFixed();
         blackhole.consume(result);
     }
 
@@ -47,23 +46,20 @@ public class JMHClientMain {
     private static void parseArgs(String[] args){
         for (String arg: args){
             String[] parsed = arg.split("=");
-            if(parsed != null && parsed.length == 2){
+            if(parsed.length == 2){
                 String key = parsed[0].toLowerCase();
                 String value = parsed[1];
                 switch (Prop.fromValue(key)){
                     case THREADS:
                         System.out.println("num of threads " + value);
-                        threads = Integer.valueOf(value);
+                        threads = Integer.parseInt(value);
                         break;
                     case CYCLES:
                         System.out.println("num of cycles " + value);
-                        cycles = Integer.valueOf(value);
-                        break;
-                    case PRINT:
-                        print = Boolean.getBoolean(value);
+                        cycles = Integer.parseInt(value);
                         break;
                     case PAYLOAD:
-                        payload = Integer.valueOf(value);
+                        payload = Integer.parseInt(value);
                         break;
                 }
             }
@@ -73,16 +69,17 @@ public class JMHClientMain {
     @State(Scope.Thread)
     public static class JMHNIOClient {
         private final Client client;
-        private final String message = generateString(payload, 'a', '\n');
+        private final byte[] message = generatePayload(payload, (byte)'a', (byte) '\n');
 
-        private static String generateString(int length, char c, char terminator) {
-            char[] chars = new char[length];
+        private static byte[] generatePayload(int length, byte b, byte terminator) {
+            byte[] result = new byte[length];
             for (int i = 0; i < length; i++) {
-                chars[i] = c;
+                result[i] = b;
             }
-            chars[length - 1] = terminator;
-            return new String(chars);
+            result[length - 1] = terminator;
+            return result;
         }
+
 
         public JMHNIOClient() {
             try {
@@ -92,19 +89,13 @@ public class JMHClientMain {
             }
         }
 
-        public String sendMessage() {
-            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes());
+        public byte[] sendMessageFixed() {
+            ByteBuffer request = ByteBuffer.wrap(message);
             try {
-                client.writeBlocking(buffer);
-                buffer.clear();
-                client.readBlocking(buffer);
-                String response = new String(buffer.array()).trim();
-                buffer.clear();
-                if(print) {
-                    System.out.println("Sent: " + message);
-                    System.out.println("Received: " + response);
-                }
-                return response;
+                client.writeBlocking(request);
+                ByteBuffer response = ByteBuffer.allocate(message.length);
+                client.readBlocking(response);
+                return response.array();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
