@@ -1,5 +1,6 @@
 package nio;
 
+import common.Constants;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -18,7 +19,7 @@ import java.util.Random;
 public class JMHClientMain {
 
     private static int threads = 1;
-    private static int payload = 1024;
+    private static int payload = Constants.MAX_PAYLOAD;
     private static int cycles = 25;
     private static boolean print = false;
 
@@ -83,6 +84,7 @@ public class JMHClientMain {
                 for (int i = 0; i < payload; i++) {
                     m[i] = 'a';
                 }
+                m[payload - 1] = '\n';
                 message = new String(m);
             } catch (IOException e) {
                 e.printStackTrace();

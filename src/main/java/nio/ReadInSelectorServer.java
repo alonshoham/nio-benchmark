@@ -1,6 +1,7 @@
 package nio;
 
 import com.gigaspaces.lrmi.nio.async.LRMIThreadPoolExecutor;
+import common.Constants;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static nio.NIOSingleThreadServer.PORT;
 import static nio.Util.*;
 
 public class ReadInSelectorServer
@@ -63,15 +63,19 @@ public class ReadInSelectorServer
                         ChannelEntry entry = clients.get((SocketChannel) key.channel());
                         if(entry == null)
                             throw new RuntimeException();
-                        ByteBuffer buffer = ByteBuffer.allocate(256);
+                        ByteBuffer buffer = ByteBuffer.allocate(Constants.MAX_PAYLOAD);
                         SocketChannel channel = entry.socketChannel;
-                        int data = channel.read(buffer);
-                        if (data == -1 || buffer.get(buffer.position() - 1) == '\n') {
-                            executor.submit(new ChannelEntryTask(key, entry, clientSelector, buffer));
-                        }else{
-                            System.out.println("failed to read from buffer. data = " + data);
+                        try {
+                            int data = channel.read(buffer);
+                            if (data == -1 || buffer.get(buffer.position() - 1) == '\n') {
+                                executor.submit(new ChannelEntryTask(key, entry, clientSelector, buffer));
+                            } else {
+                                System.out.println("failed to read from buffer. data = " + data);
+                            }
+                        } catch (IOException e) {
+                            System.out.println("Failed to read from " + channel + " - cancelling key" + System.lineSeparator() + e);
+                            key.cancel();
                         }
-
                     } else{
                         System.out.println("UNEXPECTED KEY");
                     }
@@ -92,7 +96,7 @@ public class ReadInSelectorServer
 
     public static void main( String argv[] ) throws IOException {
        parseArgs(argv);
-        new ReadInSelectorServer().run( PORT);
+        new ReadInSelectorServer().run(Constants.PORT);
     }
 
     static class ChannelEntry{
