@@ -14,8 +14,7 @@ The client main is nio.JMHClientMain with the optional arguments:
 The server implementations available:
 - nio.ReadInSelectorServer
 - nio.ReadInTaskServer
-- netty.echo.NettyNioServer
-- netty.echo.NettyEpollServer
+- netty.NettyServer
 
 Both nio servers accept the following optional args:
 - poolType=\<String> - determines which thread pool will be used. possible values:

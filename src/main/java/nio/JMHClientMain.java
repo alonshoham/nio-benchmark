@@ -22,7 +22,7 @@ public class JMHClientMain {
     private static int cycles = 10;
 
     @Benchmark
-    public void testEcho(JMHNIOClient client, Blackhole blackhole) {
+    public void testEcho(JMHNIOClient client, Blackhole blackhole) throws IOException {
         Object result = client.sendMessageFixed();
         blackhole.consume(result);
     }
@@ -89,16 +89,12 @@ public class JMHClientMain {
             }
         }
 
-        public byte[] sendMessageFixed() {
+        public byte[] sendMessageFixed() throws IOException {
             ByteBuffer request = ByteBuffer.wrap(message);
-            try {
-                client.writeBlocking(request);
-                ByteBuffer response = ByteBuffer.allocate(message.length);
-                client.readBlocking(response);
-                return response.array();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            client.writeBlocking(request);
+            ByteBuffer response = ByteBuffer.allocate(message.length);
+            client.readBlocking(response);
+            return response.array();
         }
 
         public void close(){

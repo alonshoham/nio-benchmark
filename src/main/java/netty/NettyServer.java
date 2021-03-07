@@ -13,33 +13,35 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package netty.echo;
+package netty;
 
+import common.Constants;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-
-import static nio.NIOSingleThreadServer.PORT;
+import netty.echo.EchoServerHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Echoes back any received data from a client.
  */
-public final class NettyEpollServer {
+public final class NettyServer {
 
     public static void main(String[] args) throws Exception {
-
+        NettyFactory factory = NettyFactory.getDefault();
+        Logger logger = LoggerFactory.getLogger(NettyServer.class);
+        logger.info("Starting Netty server with {}", factory.getServerSocketChannel().getName());
         // Configure the server.
-        EventLoopGroup bossGroup = new EpollEventLoopGroup(1);
-        EventLoopGroup workerGroup = new EpollEventLoopGroup();
+        EventLoopGroup bossGroup = factory.createEventLoopGroup(1);
+        EventLoopGroup workerGroup = factory.createEventLoopGroup();
         final EchoServerHandler serverHandler = new EchoServerHandler();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
-             .channel(EpollServerSocketChannel.class)
+             .channel(factory.getServerSocketChannel())
              .option(ChannelOption.SO_BACKLOG, 100)
              .handler(new LoggingHandler(LogLevel.INFO))
              .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -52,7 +54,7 @@ public final class NettyEpollServer {
              });
 
             // Start the server.
-            ChannelFuture f = b.bind(PORT).sync();
+            ChannelFuture f = b.bind(Constants.PORT).sync();
 
             // Wait until the server socket is closed.
             f.channel().closeFuture().sync();

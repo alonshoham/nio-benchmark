@@ -13,22 +13,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package netty.echo;
+package netty.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.util.CharsetUtil;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static nio.NIOSingleThreadServer.PORT;
 
@@ -39,16 +34,16 @@ import static nio.NIOSingleThreadServer.PORT;
  * the server.
  */
 @State(Scope.Thread)
-public class NettyEpollClient extends AbstractNettyClient{
-    private final EpollEventLoopGroup group;
+public class NettyNioClient extends AbstractNettyClient{
+    private final NioEventLoopGroup group;
 
-    public NettyEpollClient() {
+    public NettyNioClient() {
         // Configure the client.
-        group = new EpollEventLoopGroup(1);
+        group = new NioEventLoopGroup();
         Bootstrap b = new Bootstrap();
-        NettyEpollClient client = this;
+        NettyNioClient client = this;
         b.group(group)
-                .channel(EpollSocketChannel.class)
+                .channel(NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -68,24 +63,7 @@ public class NettyEpollClient extends AbstractNettyClient{
 
     }
 
-    public CompletableFuture<String> sendMessageInternal(String message){
-        byte[] bytes = message.getBytes(CharsetUtil.UTF_8);
-        this.completableFuture = new CompletableFuture();
-        f.channel().writeAndFlush(Unpooled.wrappedBuffer(bytes));
-        return completableFuture;
-    }
 
-    public void sendMessage(String message) {
-        String response = null;
-        try {
-            response = sendMessageInternal(message).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-//        System.out.println("Client received: " + response);
-    }
 
 //    public static void main(String[] args) {
 //        ExecutorService executorService = Executors.newFixedThreadPool(4);
