@@ -53,7 +53,7 @@ public final class NettyServer {
              });
 
             // Start the server.
-            ChannelFuture f = b.bind(Constants.PORT).sync();
+            ChannelFuture f = b.bind(Constants.ADDRESS).sync();
 
             // Wait until the server socket is closed.
             f.channel().closeFuture().sync();

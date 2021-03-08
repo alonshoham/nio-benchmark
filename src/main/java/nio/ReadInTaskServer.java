@@ -1,8 +1,8 @@
 package nio;
 
+import common.Constants;
+
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static common.Constants.PORT;
 import static common.Util.*;
 
 public class ReadInTaskServer
@@ -23,16 +22,14 @@ public class ReadInTaskServer
     Selector clientSelector;
     final Map<SocketChannel, ChannelEntry> clients = new ConcurrentHashMap<>();
 
-    public void run(int port) throws IOException
+    public void run() throws IOException
     {
         final ExecutorService executor = poolType.equals("fixed") ? Executors.newFixedThreadPool( poolSize ): Executors.newWorkStealingPool( poolSize );
         System.out.println("pool size: " + poolSize + " poolType: " + poolType);
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
-        InetSocketAddress sa =  new InetSocketAddress( InetAddress
-                .getLoopbackAddress(), port );
-        ssc.socket().bind( sa );
+        ssc.socket().bind(Constants.ADDRESS);
         ssc.register( clientSelector, SelectionKey.OP_ACCEPT );
 
         while ( true ) {
@@ -71,7 +68,7 @@ public class ReadInTaskServer
 
     public static void main( String argv[] ) throws IOException {
         parseArgs(argv);
-        new ReadInTaskServer().run( PORT);
+        new ReadInTaskServer().run();
     }
 
 

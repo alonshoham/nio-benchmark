@@ -15,6 +15,7 @@
  */
 package netty.client;
 
+import common.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -24,8 +25,6 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
-
-import static common.Constants.PORT;
 
 /**
  * Sends one message when a connection is open and echoes back any received
@@ -56,7 +55,7 @@ public class NettyNioClient extends AbstractNettyClient{
 
         // Start the client.
         try {
-            f = b.connect(HOST, PORT).sync();
+            f = b.connect(Constants.ADDRESS).sync();
         }catch (Exception e){
 
         }

@@ -17,7 +17,7 @@ public abstract class ReadProcessor {
     public abstract void read(SocketChannel channel) throws IOException;
 
     protected ByteBuffer readWithTerminator(SocketChannel channel) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(Constants.MAX_PAYLOAD);
+        ByteBuffer buffer = ByteBuffer.allocate(Constants.MAX_FRAME_LENGTH);
         int data = channel.read(buffer);
         if (data == -1)
             throw new EOFException("No data in channel " + channel);
@@ -30,10 +30,20 @@ public abstract class ReadProcessor {
         }
     }
 
-    protected void tryWrite(SocketChannel channel, ByteBuffer buff) throws IOException {
-        channel.write(buff);
-        if (buff.hasRemaining()) {
-            logger.warn("failed to write to buffer - {} bytes remaining", buff.remaining());
+    protected boolean readNonBlocking(SocketChannel channel, ByteBuffer buf) throws IOException {
+        int read = channel.read(buf);
+        if (read == -1)
+            throw new EOFException("No data in channel " + channel);
+        if (buf.hasRemaining())
+            return false;
+        buf.flip();
+        return true;
+    }
+
+    protected void tryWrite(SocketChannel channel, ByteBuffer buf) throws IOException {
+        channel.write(buf);
+        if (buf.hasRemaining()) {
+            logger.warn("failed to write to buffer - {} bytes remaining", buf.remaining());
         }
     }
 }

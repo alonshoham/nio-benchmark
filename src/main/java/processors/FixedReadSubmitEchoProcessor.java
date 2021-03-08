@@ -8,11 +8,7 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.Executor;
 
 public class FixedReadSubmitEchoProcessor extends ReadProcessor {
-    private final Executor executor;
-
-    public FixedReadSubmitEchoProcessor() {
-        this.executor = ExecutorProvider.executor;
-    }
+    private final Executor executor = ExecutorProvider.executor;
 
     @Override
     public String getName() {

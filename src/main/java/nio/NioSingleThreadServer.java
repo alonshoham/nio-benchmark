@@ -1,15 +1,12 @@
 package nio;
 
 import common.Constants;
+import common.RequestType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processors.FixedReadEchoProcessor;
-import processors.FixedReadSubmitEchoProcessor;
-import processors.ReadProcessor;
+import processors.*;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -24,11 +21,10 @@ public class NioSingleThreadServer {
     private final Selector selector;
     private final ServerSocketChannel ssc;
 
-    public NioSingleThreadServer(int port) throws IOException {
-        InetSocketAddress sa =  new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
+    public NioSingleThreadServer() throws IOException {
         ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
-        ssc.socket().bind(sa);
+        ssc.socket().bind(Constants.ADDRESS);
         selector = Selector.open();
         ssc.register(selector, SelectionKey.OP_ACCEPT );
     }
@@ -73,15 +69,17 @@ public class NioSingleThreadServer {
     }
 
     private ReadProcessor initReader(byte code) {
-        switch (code) {
-            case Constants.V1_FIXED_READ_ECHO: return new FixedReadEchoProcessor();
-            case Constants.V2_FIXED_READ_SUBMIT_ECHO: return new FixedReadSubmitEchoProcessor();
+        switch (RequestType.valueOf(code)) {
+            case V1_FIXED_READ_ECHO: return new FixedReadEchoProcessor();
+            case V2_FIXED_READ_SUBMIT_ECHO: return new FixedReadSubmitEchoProcessor();
+            case V3_DYNAMIC_READ_REPLY: return new DynamicReadReplyProcessor();
+            case V4_DYNAMIC_READ_SUBMIT_REPLY: return new DynamicReadSubmitReplyProcessor();
             default: throw new IllegalArgumentException("Unsupported code: " + code);
         }
     }
 
     public static void main( String argv[] ) throws IOException {
        parseArgs(argv);
-        new NioSingleThreadServer(Constants.PORT).run();
+        new NioSingleThreadServer().run();
     }
 }

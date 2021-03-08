@@ -15,6 +15,7 @@
  */
 package netty.client;
 
+import common.Constants;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
@@ -29,8 +30,6 @@ import org.openjdk.jmh.annotations.State;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-
-import static common.Constants.PORT;
 
 /**
  * Sends one message when a connection is open and echoes back any received
@@ -61,7 +60,7 @@ public class NettyEpollClient extends AbstractNettyClient{
 
         // Start the client.
         try {
-            f = b.connect(HOST, PORT).sync();
+            f = b.connect(Constants.ADDRESS).sync();
         }catch (Exception e){
 
         }

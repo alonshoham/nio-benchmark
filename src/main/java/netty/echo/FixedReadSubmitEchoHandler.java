@@ -30,9 +30,6 @@ public class FixedReadSubmitEchoHandler extends ChannelInboundHandlerAdapter {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Executor executor = ExecutorProvider.executor;
 
-    public FixedReadSubmitEchoHandler() {
-    }
-
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         logger.info("handlerAdded: {}", ctx.channel());

@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 abstract public class AbstractNettyClient {
-    static final String HOST = System.getProperty("host", "127.0.0.1");
     public volatile CompletableFuture completableFuture;
     protected ChannelFuture f;
 

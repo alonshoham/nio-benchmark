@@ -3,8 +3,6 @@ package common;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
@@ -12,7 +10,7 @@ public class Client implements Closeable {
     private final SocketChannel channel;
 
     public Client() throws IOException {
-        channel = SocketChannel.open(new InetSocketAddress(InetAddress.getLoopbackAddress(), Constants.PORT));
+        channel = SocketChannel.open(Constants.ADDRESS);
     }
 
     @Override
@@ -35,5 +33,6 @@ public class Client implements Closeable {
             if (read == -1)
                 throw new EOFException("No more data in channel " + channel);
         }
+        buffer.flip();
     }
 }

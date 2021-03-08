@@ -3,6 +3,7 @@ package nio;
 import common.Client;
 import common.Constants;
 import common.Prop;
+import common.RequestType;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -19,13 +20,11 @@ import java.nio.ByteBuffer;
 public class JMHClientMain {
 
     private static int threads = 1;
-    private static int payload = Constants.MAX_PAYLOAD;
     private static int cycles = 10;
-    private static final byte version = Byte.parseByte(Constants.getEnv("GSN_VERSION", "1"));
 
     @Benchmark
     public void testEcho(JMHNIOClient client, Blackhole blackhole) throws IOException {
-        Object result = client.sendMessageFixed();
+        Object result = client.sendMessage();
         blackhole.consume(result);
     }
 
@@ -60,10 +59,6 @@ public class JMHClientMain {
                         System.out.println("num of cycles " + value);
                         cycles = Integer.parseInt(value);
                         break;
-                    case PAYLOAD:
-                        System.out.println("payload " + value);
-                        payload = Integer.parseInt(value);
-                        break;
                 }
             }
         }
@@ -72,7 +67,18 @@ public class JMHClientMain {
     @State(Scope.Thread)
     public static class JMHNIOClient {
         private final Client client;
-        private final byte[] message = generatePayload(payload, (byte)'a', (byte) '\n');
+        private final RequestType requestType;
+        private final byte[] message = generatePayload(Constants.PAYLOAD, (byte)'a', (byte) '\n');
+        private final byte[] request = prependLength(message);
+        private final ByteBuffer header = ByteBuffer.allocateDirect(4);
+
+        private byte[] prependLength(byte[] message) {
+            byte[] result = new byte[4 + message.length];
+            ByteBuffer.wrap(result)
+                    .putInt(message.length)
+                    .put(message);
+            return result;
+        }
 
         private static byte[] generatePayload(int length, byte b, byte terminator) {
             byte[] result = new byte[length];
@@ -83,8 +89,12 @@ public class JMHClientMain {
             return result;
         }
 
-
         public JMHNIOClient() {
+            this(Constants.VERSION);
+        }
+
+        public JMHNIOClient(byte version) {
+            this.requestType = RequestType.valueOf(version);
             try {
                 client = new Client();
                 client.writeBlocking(version);
@@ -93,10 +103,32 @@ public class JMHClientMain {
             }
         }
 
+        public byte[] sendMessage() throws IOException {
+            switch (requestType) {
+                case V1_FIXED_READ_ECHO:
+                case V2_FIXED_READ_SUBMIT_ECHO:
+                    return sendMessageFixed();
+                case V3_DYNAMIC_READ_REPLY:
+                case V4_DYNAMIC_READ_SUBMIT_REPLY:
+                    return sendMessageDynamic();
+                default:
+                    throw new IllegalArgumentException("Unsupported requestType: " + requestType);
+            }
+        }
+
         public byte[] sendMessageFixed() throws IOException {
             ByteBuffer request = ByteBuffer.wrap(message);
             client.writeBlocking(request);
             ByteBuffer response = ByteBuffer.allocate(message.length);
+            client.readBlocking(response);
+            return response.array();
+        }
+
+        public byte[] sendMessageDynamic() throws IOException {
+            client.writeBlocking(ByteBuffer.wrap(request));
+            header.position(0);
+            client.readBlocking(header);
+            ByteBuffer response = ByteBuffer.allocate(header.getInt());
             client.readBlocking(response);
             return response.array();
         }
