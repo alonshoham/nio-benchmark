@@ -26,20 +26,18 @@ public class RequestResponseHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws IOException {
         ByteBuf requestBuf = (ByteBuf) msg;
-        logger.info("channelRead - msg.size: {}", requestBuf.readableBytes());
         // deserialize request:
         Request request = serializer.deserialize(requestBuf.nioBuffer());
-        logger.info("channelRead - request.length: {}", request.getPayload().length);
         requestBuf.release();
         // Fake execute request, create response (copy of request):
         Response response = new Response(request.getPayload());
         // Serialize response:
         ByteBuffer responseBuf = ByteBuffer.allocate(Settings.MAX_FRAME_LENGTH);
-        serializer.serializeWithLength(responseBuf, response);
+        serializer.serialize(responseBuf, response);
         responseBuf.flip();
-        logger.info("channelRead - responseBuf.limit: {}", responseBuf.limit());
+        ByteBuf responseBuf2 = ctx.alloc().buffer(responseBuf.limit());
+        responseBuf2.writeBytes(responseBuf);
         // write response
-        ctx.writeAndFlush(Unpooled.wrappedBuffer(responseBuf));
-        logger.info("channelRead - ctx.writeAndFlush");
+        ctx.writeAndFlush(responseBuf2);
     }
 }
