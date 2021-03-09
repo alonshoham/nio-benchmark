@@ -42,6 +42,7 @@ public class BioServer {
             case V2_FIXED_READ_SUBMIT_ECHO: return new FixedReadSubmitEchoProcessor();
             case V3_DYNAMIC_READ_REPLY: return new DynamicReadReplyProcessor();
             case V4_DYNAMIC_READ_SUBMIT_REPLY: return new DynamicReadSubmitReplyProcessor();
+            case V5_REQUEST_RESPONSE: return new RequestResponseProcessor();
             default: throw new IllegalArgumentException("Unsupported code: " + code);
         }
     }

@@ -2,6 +2,7 @@ package common;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
+import serializers.ReusableSmartSerializer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -12,9 +13,10 @@ public class Settings {
     public static final String HOST = getEnv("GSN_HOST","localhost");
     public static final int PORT = getEnv("GSN_PORT",8007);
     public static final InetSocketAddress ADDRESS = new InetSocketAddress(HOST, PORT);
-    public static final byte VERSION = getEnv("GSN_VERSION", (byte) 1);
+    public static final byte VERSION = getEnv("GSN_VERSION", (byte) 5);
     public static final int PAYLOAD = getEnv("GSN_PAYLOAD",1024);
     public static final int MAX_FRAME_LENGTH = 2 * PAYLOAD;
+    public static final String SERIALIZER = getEnv("GSN_SERIALIZER", ReusableSmartSerializer.class.getSimpleName());
     public static String poolType = "fixed";
     public static int poolSize = 4;
     private static final boolean CHANNEL_TCP_NODELAY = true;

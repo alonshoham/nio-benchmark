@@ -1,9 +1,6 @@
 package nio;
 
-import common.Client;
-import common.Settings;
-import common.Prop;
-import common.RequestType;
+import common.*;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -69,8 +66,8 @@ public class JMHClientMain {
         private final Client client;
         private final RequestType requestType;
         private final byte[] message = generatePayload(Settings.PAYLOAD, (byte)'a', (byte) '\n');
-        private final byte[] request = prependLength(message);
-        private final ByteBuffer header = ByteBuffer.allocateDirect(4);
+        private final byte[] requestBuf = prependLength(message);
+        private final Request request = new Request(message);
 
         private byte[] prependLength(byte[] message) {
             byte[] result = new byte[4 + message.length];
@@ -103,7 +100,7 @@ public class JMHClientMain {
             }
         }
 
-        public byte[] sendMessage() throws IOException {
+        public Object sendMessage() throws IOException {
             switch (requestType) {
                 case V1_FIXED_READ_ECHO:
                 case V2_FIXED_READ_SUBMIT_ECHO:
@@ -111,6 +108,8 @@ public class JMHClientMain {
                 case V3_DYNAMIC_READ_REPLY:
                 case V4_DYNAMIC_READ_SUBMIT_REPLY:
                     return sendMessageDynamic();
+                case V5_REQUEST_RESPONSE:
+                    return sendRequestResponse();
                 default:
                     throw new IllegalArgumentException("Unsupported requestType: " + requestType);
             }
@@ -125,13 +124,24 @@ public class JMHClientMain {
         }
 
         public byte[] sendMessageDynamic() throws IOException {
-            client.writeBlocking(ByteBuffer.wrap(request));
-            header.position(0);
-            client.readBlocking(header);
-            ByteBuffer response = ByteBuffer.allocate(header.getInt());
-            client.readBlocking(response);
+            client.writeBlocking(ByteBuffer.wrap(requestBuf));
+            ByteBuffer response = client.readBlockingWithLength();
             return response.array();
         }
+
+        private Object sendRequestResponse() throws IOException {
+            // Serialize request:
+            ByteBuffer requestBuf = ByteBuffer.allocate(Settings.MAX_FRAME_LENGTH);
+            client.serializer.serializeWithLength(requestBuf, request);
+            requestBuf.flip();
+            // Write request buffer:
+            client.writeBlocking(requestBuf);
+            // Read response buffer:
+            ByteBuffer responseBuf = client.readBlockingWithLength();
+            Response response = client.serializer.deserialize(responseBuf);
+            return response;
+        }
+
 
         public void close(){
             try {

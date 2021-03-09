@@ -30,6 +30,9 @@ public class HandshakeServerHandler extends ByteToMessageDecoder {
             case V4_DYNAMIC_READ_SUBMIT_REPLY:
                 ctx.pipeline().addLast(createLengthDecoder(), createLengthEncoder(), new DynamicReadSubmitReplyHandler());
                 break;
+            case V5_REQUEST_RESPONSE:
+                ctx.pipeline().addLast(createLengthDecoder(), createLengthEncoder(), new RequestResponseHandler());
+                break;
             default: throw new IllegalArgumentException("Unsupported version: " + code);
         }
         ctx.pipeline().remove(this);

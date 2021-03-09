@@ -1,0 +1,2 @@
+set GSN_VERSION=5
+set GSN_SERIALIZER=DefaultSerializer
