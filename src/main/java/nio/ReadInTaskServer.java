@@ -1,6 +1,6 @@
 package nio;
 
-import common.Constants;
+import common.Settings;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,7 +29,7 @@ public class ReadInTaskServer
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
-        ssc.socket().bind(Constants.ADDRESS);
+        ssc.socket().bind(Settings.ADDRESS);
         ssc.register( clientSelector, SelectionKey.OP_ACCEPT );
 
         while ( true ) {

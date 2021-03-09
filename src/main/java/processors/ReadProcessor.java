@@ -1,6 +1,6 @@
 package processors;
 
-import common.Constants;
+import common.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +17,7 @@ public abstract class ReadProcessor {
     public abstract void read(SocketChannel channel) throws IOException;
 
     protected ByteBuffer readWithTerminator(SocketChannel channel) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(Constants.MAX_FRAME_LENGTH);
+        ByteBuffer buffer = ByteBuffer.allocate(Settings.MAX_FRAME_LENGTH);
         int data = channel.read(buffer);
         if (data == -1)
             throw new EOFException("No data in channel " + channel);

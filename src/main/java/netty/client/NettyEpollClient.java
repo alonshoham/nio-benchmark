@@ -15,7 +15,7 @@
  */
 package netty.client;
 
-import common.Constants;
+import common.Settings;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelInitializer;
@@ -60,7 +60,7 @@ public class NettyEpollClient extends AbstractNettyClient{
 
         // Start the client.
         try {
-            f = b.connect(Constants.ADDRESS).sync();
+            f = b.connect(Settings.ADDRESS).sync();
         }catch (Exception e){
 
         }

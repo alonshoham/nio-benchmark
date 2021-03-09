@@ -1,6 +1,6 @@
 package nio;
 
-import common.Constants;
+import common.Settings;
 import common.RequestType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class NioSingleThreadServer {
     public NioSingleThreadServer() throws IOException {
         ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
-        ssc.socket().bind(Constants.ADDRESS);
+        ssc.socket().bind(Settings.ADDRESS);
         selector = Selector.open();
         ssc.register(selector, SelectionKey.OP_ACCEPT );
     }

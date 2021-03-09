@@ -1,6 +1,6 @@
 package netty.echo;
 
-import common.Constants;
+import common.Settings;
 import common.RequestType;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -37,7 +37,7 @@ public class HandshakeServerHandler extends ByteToMessageDecoder {
 
     private ChannelInboundHandler createLengthDecoder() {
         return new LengthFieldBasedFrameDecoder(
-                Constants.MAX_FRAME_LENGTH, 0, HEADER_SIZE, 0, HEADER_SIZE);
+                Settings.MAX_FRAME_LENGTH, 0, HEADER_SIZE, 0, HEADER_SIZE);
     }
 
     private ChannelOutboundHandler createLengthEncoder() {

@@ -15,7 +15,7 @@
  */
 package netty.client;
 
-import common.Constants;
+import common.Settings;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -55,7 +55,7 @@ public class NettyNioClient extends AbstractNettyClient{
 
         // Start the client.
         try {
-            f = b.connect(Constants.ADDRESS).sync();
+            f = b.connect(Settings.ADDRESS).sync();
         }catch (Exception e){
 
         }

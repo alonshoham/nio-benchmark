@@ -15,7 +15,7 @@
  */
 package netty;
 
-import common.Constants;
+import common.Settings;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -53,7 +53,7 @@ public final class NettyServer {
              });
 
             // Start the server.
-            ChannelFuture f = b.bind(Constants.ADDRESS).sync();
+            ChannelFuture f = b.bind(Settings.ADDRESS).sync();
 
             // Wait until the server socket is closed.
             f.channel().closeFuture().sync();

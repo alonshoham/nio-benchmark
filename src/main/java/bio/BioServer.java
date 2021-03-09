@@ -1,6 +1,6 @@
 package bio;
 
-import common.Constants;
+import common.Settings;
 import common.RequestType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class BioServer {
 
     public BioServer() throws IOException {
         ssc = ServerSocketChannel.open();
-        ssc.bind(Constants.ADDRESS);
+        ssc.bind(Settings.ADDRESS);
     }
 
     public void run() {

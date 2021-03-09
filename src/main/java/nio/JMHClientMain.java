@@ -1,7 +1,7 @@
 package nio;
 
 import common.Client;
-import common.Constants;
+import common.Settings;
 import common.Prop;
 import common.RequestType;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -68,7 +68,7 @@ public class JMHClientMain {
     public static class JMHNIOClient {
         private final Client client;
         private final RequestType requestType;
-        private final byte[] message = generatePayload(Constants.PAYLOAD, (byte)'a', (byte) '\n');
+        private final byte[] message = generatePayload(Settings.PAYLOAD, (byte)'a', (byte) '\n');
         private final byte[] request = prependLength(message);
         private final ByteBuffer header = ByteBuffer.allocateDirect(4);
 
@@ -90,7 +90,7 @@ public class JMHClientMain {
         }
 
         public JMHNIOClient() {
-            this(Constants.VERSION);
+            this(Settings.VERSION);
         }
 
         public JMHNIOClient(byte version) {

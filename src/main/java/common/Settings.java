@@ -2,7 +2,7 @@ package common;
 
 import java.net.InetSocketAddress;
 
-public class Constants {
+public class Settings {
     public static final String HOST = getEnv("GSN_HOST","localhost");
     public static final int PORT = getEnv("GSN_PORT",8007);
     public static final InetSocketAddress ADDRESS = new InetSocketAddress(HOST, PORT);

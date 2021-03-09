@@ -10,7 +10,7 @@ public class Client implements Closeable {
     private final SocketChannel channel;
 
     public Client() throws IOException {
-        channel = SocketChannel.open(Constants.ADDRESS);
+        channel = SocketChannel.open(Settings.ADDRESS);
     }
 
     @Override
