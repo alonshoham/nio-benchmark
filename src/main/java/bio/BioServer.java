@@ -30,7 +30,7 @@ public class BioServer {
                 SocketChannel clientSocket = ssc.accept();
                 byte code = (byte) clientSocket.socket().getInputStream().read();
                 ReadProcessor processor = initReader(code);
-                clientSocket.socket().setTcpNoDelay(true);
+                Settings.initSocketChannel(clientSocket);
                 channels.add(new BioChannel(clientSocket, processor));
             }
         } catch (IOException e) {

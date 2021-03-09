@@ -51,6 +51,7 @@ public final class NettyServer {
                      p.addLast(new HandshakeServerHandler());
                  }
              });
+            Settings.initChildOptions(b);
 
             // Start the server.
             ChannelFuture f = b.bind(Settings.ADDRESS).sync();

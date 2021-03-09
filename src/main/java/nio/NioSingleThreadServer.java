@@ -63,7 +63,7 @@ public class NioSingleThreadServer {
         byte code = (byte) clientSocket.socket().getInputStream().read();
         ReadProcessor processor = initReader(code);
         clientSocket.configureBlocking(false);
-        clientSocket.socket().setTcpNoDelay(true);
+        Settings.initSocketChannel(clientSocket);
         clientSocket.register(selector, SelectionKey.OP_READ, processor);
         logger.info("Added new client {} with processor {}", clientSocket, processor.getName());
     }
