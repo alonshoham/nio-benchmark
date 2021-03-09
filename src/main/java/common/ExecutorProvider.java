@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import static common.Util.poolSize;
-import static common.Util.poolType;
+import static common.Settings.poolSize;
+import static common.Settings.poolType;
 
 public class ExecutorProvider {
     public static final Executor executor = initExecutor();

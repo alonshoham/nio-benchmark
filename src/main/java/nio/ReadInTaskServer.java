@@ -1,5 +1,6 @@
 package nio;
 
+import common.ExecutorProvider;
 import common.Settings;
 
 import java.io.IOException;
@@ -12,10 +13,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import static common.Util.*;
+import java.util.concurrent.Executor;
 
 public class ReadInTaskServer
 {
@@ -24,8 +22,7 @@ public class ReadInTaskServer
 
     public void run() throws IOException
     {
-        final ExecutorService executor = poolType.equals("fixed") ? Executors.newFixedThreadPool( poolSize ): Executors.newWorkStealingPool( poolSize );
-        System.out.println("pool size: " + poolSize + " poolType: " + poolType);
+        final Executor executor = ExecutorProvider.executor;
         clientSelector = Selector.open();
         ServerSocketChannel ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
@@ -46,7 +43,7 @@ public class ReadInTaskServer
                     } else if(key.isReadable()){
 //                        System.out.println("Current key: " + key);
                         key.interestOps(0);
-                        executor.submit(new ChannelEntryTask(key, clients.get((SocketChannel) key.channel()), clientSelector));
+                        executor.execute(new ChannelEntryTask(key, clients.get(key.channel()), clientSelector));
 
                     } else{
                         System.out.println("UNEXPECTED KEY");
@@ -66,8 +63,8 @@ public class ReadInTaskServer
         System.out.println("Added new client");
     }
 
-    public static void main( String argv[] ) throws IOException {
-        parseArgs(argv);
+    public static void main(String[] args) throws IOException {
+        Settings.parseArgs(args);
         new ReadInTaskServer().run();
     }
 

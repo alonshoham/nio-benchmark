@@ -14,8 +14,6 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 
-import static common.Util.*;
-
 public class NioSingleThreadServer {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Selector selector;
@@ -78,8 +76,8 @@ public class NioSingleThreadServer {
         }
     }
 
-    public static void main( String argv[] ) throws IOException {
-       parseArgs(argv);
+    public static void main(String[] args) throws IOException {
+       Settings.parseArgs(args);
         new NioSingleThreadServer().run();
     }
 }

@@ -15,7 +15,25 @@ public class Settings {
     public static final byte VERSION = getEnv("GSN_VERSION", (byte) 1);
     public static final int PAYLOAD = getEnv("GSN_PAYLOAD",1024);
     public static final int MAX_FRAME_LENGTH = 2 * PAYLOAD;
+    public static String poolType = "fixed";
+    public static int poolSize = 4;
     private static final boolean CHANNEL_TCP_NODELAY = true;
+
+    public static void parseArgs(String[] args) {
+        if(args != null) {
+            for (String arg: args){
+                String[] parsed = arg.split("=");
+                if(parsed.length == 2) {
+                    String key = parsed[0];
+                    String value = parsed[1];
+                    if (key.equals("poolSize"))
+                        poolSize = Integer.parseInt(value);
+                    if (key.equals("poolType"))
+                        poolType = value.toLowerCase();
+                }
+            }
+        }
+    }
 
     public static String getEnv(String key, String defVal) {
         String s = System.getenv(key);

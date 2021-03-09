@@ -12,8 +12,6 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static common.Util.parseArgs;
-
 public class BioServer {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ServerSocketChannel ssc;
@@ -48,8 +46,8 @@ public class BioServer {
         }
     }
 
-    public static void main(String args[]) throws IOException {
-        parseArgs(args);
+    public static void main(String[] args) throws IOException {
+        Settings.parseArgs(args);
         new BioServer().run();
     }
 }
