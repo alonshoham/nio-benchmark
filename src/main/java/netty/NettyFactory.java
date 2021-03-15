@@ -7,10 +7,15 @@ import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.incubator.channel.uring.IOUring;
+import io.netty.incubator.channel.uring.IOUringEventLoopGroup;
+import io.netty.incubator.channel.uring.IOUringServerSocketChannel;
 
 public abstract class NettyFactory {
 
     public static NettyFactory getDefault() {
+        if(IOUring.isAvailable())
+            return new IOUringFactory();
         return Epoll.isAvailable() ? new EpollFactory() : new NioFactory();
     }
 
@@ -43,6 +48,18 @@ public abstract class NettyFactory {
         @Override
         public Class<? extends ServerSocketChannel> getServerSocketChannel() {
             return EpollServerSocketChannel.class;
+        }
+    }
+
+    private static class IOUringFactory extends NettyFactory {
+        @Override
+        public EventLoopGroup createEventLoopGroup(int nThreads) {
+            return new IOUringEventLoopGroup(nThreads);
+        }
+
+        @Override
+        public Class<? extends ServerSocketChannel> getServerSocketChannel() {
+            return IOUringServerSocketChannel.class;
         }
     }
 }

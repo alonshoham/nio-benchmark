@@ -62,6 +62,12 @@
             <artifactId>grpc-protobuf</artifactId>
             <version>1.35.0</version>
         </dependency>
+        <dependency>
+            <groupId>io.netty.incubator</groupId>
+            <artifactId>netty-incubator-transport-native-io_uring</artifactId>
+            <version>0.0.1.Final</version>
+            <classifier>linux-x86_64</classifier>
+        </dependency>
     </dependencies>
 
     <properties>
