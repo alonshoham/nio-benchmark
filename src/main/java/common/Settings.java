@@ -2,6 +2,7 @@ package common;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
+import io.netty.util.NettyRuntime;
 import serializers.ReusableSmartSerializer;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ public class Settings {
     public static final String HOST = getEnv("GSN_HOST","localhost");
     public static final int PORT = getEnv("GSN_PORT",8007);
     public static final InetSocketAddress ADDRESS = new InetSocketAddress(HOST, PORT);
+    public static final int WORKERS = getEnv("GSN_IO_WORKERS", NettyRuntime.availableProcessors() * 2);
     public static final byte VERSION = getEnv("GSN_VERSION", (byte) 5);
     public static final int PAYLOAD = getEnv("GSN_PAYLOAD",1024);
     public static final int MAX_FRAME_LENGTH = 2 * PAYLOAD;

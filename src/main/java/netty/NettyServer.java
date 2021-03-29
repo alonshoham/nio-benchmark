@@ -31,12 +31,14 @@ import org.slf4j.LoggerFactory;
 public final class NettyServer {
 
     public static void main(String[] args) throws Exception {
+        int numOfWorkers = Settings.WORKERS;
         NettyFactory factory = NettyFactory.getDefault();
         Logger logger = LoggerFactory.getLogger(NettyServer.class);
-        logger.info("Starting Netty server with {}", factory.getServerSocketChannel().getName());
+        logger.info("Binding to {} (I/O workers: {}, channel: {})", Settings.ADDRESS, numOfWorkers, factory.getServerSocketChannel().getSimpleName());
+
         // Configure the server.
         EventLoopGroup bossGroup = factory.createEventLoopGroup(1);
-        EventLoopGroup workerGroup = factory.createEventLoopGroup();
+        EventLoopGroup workerGroup = numOfWorkers != -1 ? factory.createEventLoopGroup(numOfWorkers) : bossGroup;
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
