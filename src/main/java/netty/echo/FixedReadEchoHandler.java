@@ -15,6 +15,8 @@
  */
 package netty.echo;
 
+import common.Settings;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
@@ -25,15 +27,18 @@ import org.slf4j.LoggerFactory;
  */
 public class FixedReadEchoHandler extends ChannelInboundHandlerAdapter {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final int expectedPayload = Settings.PAYLOAD;
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        logger.info("handlerAdded: {}", ctx.channel());
+        logger.info("handlerAdded: {} - expected payload: {}", ctx.channel(), expectedPayload);
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        //logger.info("channelRead: {} {}", ctx.channel(), msg);
+        ByteBuf buf = (ByteBuf) msg;
+        if (buf.readableBytes() != expectedPayload)
+            logger.warn("Unexpected payload length: {}", buf.readableBytes());
         ctx.writeAndFlush(msg);
     }
 
