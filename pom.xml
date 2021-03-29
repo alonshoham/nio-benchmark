@@ -7,6 +7,14 @@
     <groupId>org.example</groupId>
     <artifactId>nio-benchmark</artifactId>
     <version>1.0-SNAPSHOT</version>
+
+    <repositories>
+        <repository>
+            <id>org.openspaces</id>
+            <url>http://maven-repository.openspaces.org</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- JMH dependencies -->
         <dependency>
@@ -40,7 +48,7 @@
         <dependency>
             <artifactId>xap-datagrid</artifactId>
             <groupId>org.gigaspaces</groupId>
-            <version>16.0.0-SNAPSHOT</version>
+            <version>16.0.0-m10</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
