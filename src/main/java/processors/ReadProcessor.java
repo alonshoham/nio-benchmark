@@ -1,5 +1,6 @@
 package processors;
 
+import common.RequestType;
 import common.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,4 +47,16 @@ public abstract class ReadProcessor {
             logger.warn("failed to write to buffer - {} bytes remaining", buf.remaining());
         }
     }
+
+    public static ReadProcessor initReader(byte code) {
+        switch (RequestType.valueOf(code)) {
+            case V1_FIXED_READ_ECHO: return new FixedReadEchoProcessor();
+            case V2_FIXED_READ_SUBMIT_ECHO: return new FixedReadSubmitEchoProcessor();
+            case V3_DYNAMIC_READ_REPLY: return new DynamicReadReplyProcessor();
+            case V4_DYNAMIC_READ_SUBMIT_REPLY: return new DynamicReadSubmitReplyProcessor();
+            case V5_REQUEST_RESPONSE: return new RequestResponseProcessor();
+            default: throw new IllegalArgumentException("Unsupported code: " + code);
+        }
+    }
+
 }

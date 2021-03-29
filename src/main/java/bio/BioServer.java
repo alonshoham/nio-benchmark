@@ -1,7 +1,6 @@
 package bio;
 
 import common.Settings;
-import common.RequestType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processors.*;
@@ -27,23 +26,12 @@ public class BioServer {
             while (true) {
                 SocketChannel clientSocket = ssc.accept();
                 byte code = (byte) clientSocket.socket().getInputStream().read();
-                ReadProcessor processor = initReader(code);
+                ReadProcessor processor = ReadProcessor.initReader(code);
                 Settings.initSocketChannel(clientSocket);
                 channels.add(new BioChannel(clientSocket, processor));
             }
         } catch (IOException e) {
             logger.error("Failed to process selector", e);
-        }
-    }
-
-    private ReadProcessor initReader(byte code) {
-        switch (RequestType.valueOf(code)) {
-            case V1_FIXED_READ_ECHO: return new FixedReadEchoProcessor();
-            case V2_FIXED_READ_SUBMIT_ECHO: return new FixedReadSubmitEchoProcessor();
-            case V3_DYNAMIC_READ_REPLY: return new DynamicReadReplyProcessor();
-            case V4_DYNAMIC_READ_SUBMIT_REPLY: return new DynamicReadSubmitReplyProcessor();
-            case V5_REQUEST_RESPONSE: return new RequestResponseProcessor();
-            default: throw new IllegalArgumentException("Unsupported code: " + code);
         }
     }
 

@@ -1,7 +1,6 @@
 package nio;
 
 import common.Settings;
-import common.RequestType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processors.*;
@@ -20,6 +19,7 @@ public class NioSingleThreadServer {
     private final ServerSocketChannel ssc;
 
     public NioSingleThreadServer() throws IOException {
+        logger.info("Binding to {}", Settings.ADDRESS);
         ssc = ServerSocketChannel.open();
         ssc.configureBlocking(false);
         ssc.socket().bind(Settings.ADDRESS);
@@ -56,25 +56,14 @@ public class NioSingleThreadServer {
         }
     }
 
-    void acceptClient( ServerSocketChannel ssc ) throws IOException {
+    private void acceptClient(ServerSocketChannel ssc) throws IOException {
         SocketChannel clientSocket = ssc.accept();
         byte code = (byte) clientSocket.socket().getInputStream().read();
-        ReadProcessor processor = initReader(code);
+        ReadProcessor processor = ReadProcessor.initReader(code);
         clientSocket.configureBlocking(false);
         Settings.initSocketChannel(clientSocket);
         clientSocket.register(selector, SelectionKey.OP_READ, processor);
         logger.info("Added new client {} with processor {}", clientSocket, processor.getName());
-    }
-
-    private ReadProcessor initReader(byte code) {
-        switch (RequestType.valueOf(code)) {
-            case V1_FIXED_READ_ECHO: return new FixedReadEchoProcessor();
-            case V2_FIXED_READ_SUBMIT_ECHO: return new FixedReadSubmitEchoProcessor();
-            case V3_DYNAMIC_READ_REPLY: return new DynamicReadReplyProcessor();
-            case V4_DYNAMIC_READ_SUBMIT_REPLY: return new DynamicReadSubmitReplyProcessor();
-            case V5_REQUEST_RESPONSE: return new RequestResponseProcessor();
-            default: throw new IllegalArgumentException("Unsupported code: " + code);
-        }
     }
 
     public static void main(String[] args) throws IOException {
