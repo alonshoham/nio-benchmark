@@ -15,6 +15,7 @@ public class Settings {
     public static final int PORT = getEnv("GSN_PORT",8007);
     public static final InetSocketAddress ADDRESS = new InetSocketAddress(HOST, PORT);
     public static final int WORKERS = getEnv("GSN_IO_WORKERS", NettyRuntime.availableProcessors() * 2);
+    public static final boolean EXIT_ON_ERROR = getEnv("GSN_EXIT_ON_ERROR",true);
     public static final byte VERSION = getEnv("GSN_VERSION", (byte) 5);
     public static final int PAYLOAD = getEnv("GSN_PAYLOAD",1024);
     public static final int MAX_FRAME_LENGTH = 2 * PAYLOAD;
@@ -52,6 +53,11 @@ public class Settings {
     public static byte getEnv(String key, byte defVal) {
         String s = System.getenv(key);
         return s != null ? Byte.parseByte(s) : defVal;
+    }
+
+    public static boolean getEnv(String key, boolean defVal) {
+        String s = System.getenv(key);
+        return s != null ? Boolean.parseBoolean(s) : defVal;
     }
 
     public static void initSocketChannel(SocketChannel channel)

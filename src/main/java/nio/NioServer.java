@@ -112,6 +112,10 @@ public class NioServer {
                             } catch (IOException e) {
                                 logger.warn("Failed to read from {} - cancelling key", key.channel(), e);
                                 key.cancel();
+                                if (Settings.EXIT_ON_ERROR) {
+                                    logger.info("EXIT_ON_ERROR enabled - exiting...");
+                                    System.exit(1);
+                                }
                             }
                         }
                     }

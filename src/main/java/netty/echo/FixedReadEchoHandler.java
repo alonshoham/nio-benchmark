@@ -47,5 +47,9 @@ public class FixedReadEchoHandler extends ChannelInboundHandlerAdapter {
         // Close the connection when an exception is raised.
         logger.warn("exceptionCaught - closing channel {}", ctx.channel(), cause);
         ctx.close();
+        if (Settings.EXIT_ON_ERROR) {
+            logger.info("EXIT_ON_ERROR enabled - exiting...");
+            System.exit(1);
+        }
     }
 }
