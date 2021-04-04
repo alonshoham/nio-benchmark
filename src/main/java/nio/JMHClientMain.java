@@ -69,6 +69,11 @@ public class JMHClientMain {
         private final byte[] requestBuf = prependLength(message);
         private final Request request = new Request(message);
 
+        static  {
+            if (Settings.EXIT_ON_END)
+                Runtime.getRuntime().addShutdownHook(new Thread(JMHNIOClient::shutdown));
+        }
+
         private byte[] prependLength(byte[] message) {
             byte[] result = new byte[4 + message.length];
             ByteBuffer.wrap(result)
@@ -148,6 +153,17 @@ public class JMHClientMain {
                 System.out.println("CLOSING!!");
                 client.close();
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private static void shutdown() {
+            System.out.println("Benchmark completed - sending command to shut down server...");
+            try {
+                Client client = new Client();
+                client.writeBlocking(RequestType.V0_TERMINATE.version);
+            } catch (IOException e) {
+                System.out.println("Error while closing server:");
                 e.printStackTrace();
             }
         }

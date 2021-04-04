@@ -50,6 +50,9 @@ public abstract class ReadProcessor {
 
     public static ReadProcessor initReader(byte code) {
         switch (RequestType.valueOf(code)) {
+            case V0_TERMINATE:
+                LoggerFactory.getLogger(ReadProcessor.class).info("Received exit command - terminating...");
+                System.exit(0);
             case V1_FIXED_READ_ECHO: return new FixedReadEchoProcessor();
             case V2_FIXED_READ_SUBMIT_ECHO: return new FixedReadSubmitEchoProcessor();
             case V3_DYNAMIC_READ_REPLY: return new DynamicReadReplyProcessor();

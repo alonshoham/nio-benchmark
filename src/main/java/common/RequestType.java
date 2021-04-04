@@ -1,6 +1,7 @@
 package common;
 
 public enum RequestType {
+    V0_TERMINATE(0),
     V1_FIXED_READ_ECHO(1),
     V2_FIXED_READ_SUBMIT_ECHO(2),
     V3_DYNAMIC_READ_REPLY(3),
@@ -18,6 +19,6 @@ public enum RequestType {
     }
 
     public static RequestType valueOf(byte code) {
-        return values()[code-1];
+        return values()[code];
     }
 }
