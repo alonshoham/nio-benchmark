@@ -1,10 +1,11 @@
 package jmh.benchmarks.basic;
 
+import com.gigaspaces.async.AsyncFuture;
 import com.gigaspaces.document.SpaceDocument;
+import com.gigaspaces.internal.utils.GsEnv;
+import com.gigaspaces.management.GigaSpacesRuntime;
 import com.gigaspaces.metadata.SpaceTypeDescriptorBuilder;
 import com.gigaspaces.query.IdQuery;
-import jmh.model.Message;
-import jmh.utils.GigaSpaceFactory;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.BenchmarkParams;
 import org.openjdk.jmh.infra.ThreadParams;
@@ -13,10 +14,10 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openspaces.core.GigaSpace;
+import org.openspaces.core.GigaSpaceConfigurer;
+import org.openspaces.core.space.SpaceProxyConfigurer;
 
-import java.rmi.RemoteException;
-
-import static jmh.utils.DefaultProperties.*;
+import java.io.Serializable;
 
 @State(Scope.Benchmark)
 public class ReadByIdBenchmark {
@@ -30,9 +31,6 @@ public class ReadByIdBenchmark {
     @State(Scope.Benchmark)
     public static class SpaceState {
 
-        @Param({MODE_EMBEDDED, MODE_REMOTE})
-        private static String mode;
-
         private GigaSpace gigaSpace;
 
         public static final String TYPE_NAME = "Message";
@@ -44,7 +42,11 @@ public class ReadByIdBenchmark {
             //System.setProperty("com.gs.nio.type", "netty");
             //System.setProperty("com.gs.nio.host", "192.168.68.108");
             //System.setProperty("com.gs.nio.enabled", "false");
-            gigaSpace = GigaSpaceFactory.getOrCreateSpace(DEFAULT_SPACE_NAME, mode.equals(MODE_EMBEDDED));
+            gigaSpace = new GigaSpaceConfigurer(new SpaceProxyConfigurer("test")
+                    .lookupLocators(GsEnv.get("LOOKUP_LOCATORS", "127.0.0.1"))
+                    .lookupTimeout(15000))
+                    .create();
+            Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
             gigaSpace.clear(null);
             gigaSpace.getTypeManager().registerTypeDescriptor(new SpaceTypeDescriptorBuilder(TYPE_NAME)
                     .addFixedProperty("id", int.class)
@@ -59,25 +61,28 @@ public class ReadByIdBenchmark {
             }
         }
 
-        @TearDown
-        public void teardown() {
-            if (mode.equals(MODE_EMBEDDED)) {
-                try {
-                    gigaSpace.getSpace().getDirectProxy().shutdown();
-                } catch (RemoteException e) {
-                    System.err.println("failed to shutdown Space" + e);
-                }
+        private void shutdown() {
+            System.out.println("Executing shutdown hook...");
+            //gigaSpace.clear(null);
+            //System.out.println("Space cleared");
+            try {
+                AsyncFuture<Serializable> future = gigaSpace.execute(new ShutdownTask());
+                future.get();
+                System.out.println("shutdown hook succeeded");
+            } catch (Throwable e) {
+                System.out.println("shutdown hook failed");
+                e.printStackTrace();
+            } finally {
+                GigaSpacesRuntime.shutdown();
+                System.out.println("shutdown hook completed");
             }
         }
     }
-
 
     public static void main(String[] args) throws RunnerException {
         int threads = args.length > 0 ? Integer.parseInt(args[0]) : 1;
         Options opt = new OptionsBuilder()
                 .include(ReadByIdBenchmark.class.getName())
-                //.param(PARAM_MODE, MODE_EMBEDDED)
-                .param(PARAM_MODE, MODE_REMOTE)
                 .threads(threads)
                 .forks(1)
                 .build();

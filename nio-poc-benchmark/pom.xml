@@ -10,7 +10,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <gs.version>16.0.0-m8-wed-8</gs.version>
+        <gs.version>16.0.0-m12-tue-8</gs.version>
         <junit.version>4.12</junit.version>
         <slf4j.version>1.7.26</slf4j.version>
     </properties>
