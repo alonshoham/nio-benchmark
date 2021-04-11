@@ -2,7 +2,6 @@ package jmh.benchmarks.basic;
 
 import com.gigaspaces.async.AsyncFuture;
 import com.gigaspaces.document.SpaceDocument;
-import com.gigaspaces.internal.utils.GsEnv;
 import com.gigaspaces.management.GigaSpacesRuntime;
 import com.gigaspaces.metadata.SpaceTypeDescriptorBuilder;
 import com.gigaspaces.query.IdQuery;
@@ -24,7 +23,6 @@ public class ReadByIdBenchmark {
 
     @Benchmark
     public Object testReadById(SpaceState spaceState, ThreadParams threadParams) {
-        //return spaceState.gigaSpace.readById(Message.class, String.valueOf(threadParams.getThreadIndex()));
         return spaceState.gigaSpace.readById(new IdQuery<SpaceDocument>(SpaceState.TYPE_NAME, threadParams.getThreadIndex()));
     }
 
@@ -37,15 +35,7 @@ public class ReadByIdBenchmark {
 
         @Setup
         public void setup(BenchmarkParams benchmarkParams) {
-            //System.setProperty("com.gs.nio.type", "lrmi");
-            //System.setProperty("com.gs.nio.type", "nio");
-            //System.setProperty("com.gs.nio.type", "netty");
-            //System.setProperty("com.gs.nio.host", "192.168.68.108");
-            //System.setProperty("com.gs.nio.enabled", "false");
-            gigaSpace = new GigaSpaceConfigurer(new SpaceProxyConfigurer("test")
-                    .lookupLocators(GsEnv.get("LOOKUP_LOCATORS", "127.0.0.1"))
-                    .lookupTimeout(15000))
-                    .create();
+            gigaSpace = new GigaSpaceConfigurer(new SpaceProxyConfigurer("test")).create();
             Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
             gigaSpace.clear(null);
             gigaSpace.getTypeManager().registerTypeDescriptor(new SpaceTypeDescriptorBuilder(TYPE_NAME)
@@ -63,8 +53,6 @@ public class ReadByIdBenchmark {
 
         private void shutdown() {
             System.out.println("Executing shutdown hook...");
-            //gigaSpace.clear(null);
-            //System.out.println("Space cleared");
             try {
                 AsyncFuture<Serializable> future = gigaSpace.execute(new ShutdownTask());
                 future.get();
