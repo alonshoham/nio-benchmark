@@ -1,6 +1,6 @@
 #!/bin/bash
 source settings.sh
-for c in lrmi nio
+for c in nio #lrmi
 do
     export GS_NIO_TYPE=$c
     for w in 4 #1 4 8 16 32
@@ -9,6 +9,8 @@ do
         do
             echo "*** Starting benchmark with $c and $w workers for $t benchmark threads"
             java -cp target/nio-poc-benchmark-0.1-jar-with-dependencies.jar org.openjdk.jmh.Main jmh.benchmarks.basic.ReadByIdBenchmark -rff $c-w$w-t$t.csv -f 1 -i 5 -t $t
+            echo "***$c-$w-$t***" >> summary.csv
+            cat $c-w$w-t$t.csv >> summary.csv
         done
     done
 done

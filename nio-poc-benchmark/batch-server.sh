@@ -1,6 +1,6 @@
 #!/bin/bash
 source settings.sh
-for c in lrmi nio
+for c in nio #lrmi
 do
     export GS_NIO_TYPE=$c
     for w in 4 #1 4 8 16 32
