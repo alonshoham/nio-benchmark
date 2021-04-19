@@ -5,6 +5,7 @@ import com.gigaspaces.document.SpaceDocument;
 import com.gigaspaces.management.GigaSpacesRuntime;
 import com.gigaspaces.metadata.SpaceTypeDescriptorBuilder;
 import com.gigaspaces.query.IdQuery;
+import com.gigaspaces.transport.PocSettings;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.BenchmarkParams;
 import org.openjdk.jmh.infra.ThreadParams;
@@ -23,19 +24,25 @@ public class ReadByIdBenchmark {
 
     @Benchmark
     public Object testReadById(SpaceState spaceState, ThreadParams threadParams) {
-        return spaceState.gigaSpace.readById(new IdQuery<SpaceDocument>(SpaceState.TYPE_NAME, threadParams.getThreadIndex()));
+        int threadIndex = threadParams.getThreadIndex();
+        GigaSpace gigaSpace = spaceState.spaceProxies[threadIndex];
+        return gigaSpace.readById(new IdQuery<SpaceDocument>(SpaceState.TYPE_NAME, threadIndex));
     }
 
     @State(Scope.Benchmark)
     public static class SpaceState {
 
-        private GigaSpace gigaSpace;
-
+        private static final String spaceName = "test";
         public static final String TYPE_NAME = "Message";
+        private GigaSpace[] spaceProxies;
+
+        private GigaSpace createProxy(String spaceName) {
+            return new GigaSpaceConfigurer(new SpaceProxyConfigurer(spaceName)).create();
+        }
 
         @Setup
         public void setup(BenchmarkParams benchmarkParams) {
-            gigaSpace = new GigaSpaceConfigurer(new SpaceProxyConfigurer("test")).create();
+            GigaSpace gigaSpace = createProxy(spaceName);
             Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
             gigaSpace.clear(null);
             gigaSpace.getTypeManager().registerTypeDescriptor(new SpaceTypeDescriptorBuilder(TYPE_NAME)
@@ -49,12 +56,19 @@ public class ReadByIdBenchmark {
                         .setProperty("id", i)
                         .setProperty("payload", "foo"));
             }
+
+            boolean proxyPerThread = PocSettings.clientConnectionPoolType.equals("singleton");
+            System.out.println("proxyPerThread: " + proxyPerThread);
+            spaceProxies = new GigaSpace[benchmarkParams.getThreads()];
+            for (int i = 0; i < spaceProxies.length; i++) {
+                spaceProxies[i] = proxyPerThread ? createProxy(spaceName) : gigaSpace;
+            }
         }
 
         private void shutdown() {
             System.out.println("Executing shutdown hook...");
             try {
-                AsyncFuture<Serializable> future = gigaSpace.execute(new ShutdownTask());
+                AsyncFuture<Serializable> future = spaceProxies[0].execute(new ShutdownTask());
                 future.get();
                 System.out.println("shutdown hook succeeded");
             } catch (Throwable e) {
